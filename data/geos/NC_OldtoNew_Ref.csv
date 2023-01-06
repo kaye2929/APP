@@ -1,4 +1,4 @@
-"OBJECTID","output_nc_name","old_nc_name","new_nc_name","nc_id","WADDRESS","DWEBSITE","DEMAIL","DPHONE","CERTIFIED","TOOLTIP","NLA_URL","SERVICE_RE"
+"OBJECTID","data_nc_name","old_nc_name","new_nc_name","nc_id","WADDRESS","DWEBSITE","DEMAIL","DPHONE","CERTIFIED","TOOLTIP","NLA_URL","SERVICE_RE"
 1,"ARLETA NC","ARLETA NC","ARLETA NC",6,"http://www.arletanc.org/","http://empowerla.org/ANC","ANC@EmpowerLA.org","213-978-1551",2002-10-22,"ARLETA NC","navigatela/reports/nc_reports.cfm?id=6","REGION 1 - NORTH EAST VALLEY"
 2,"ARROYO SECO NC","ARROYO SECO NC","ARROYO SECO NC",42,"http://www.asnc.us/","http://empowerla.org/ASNC","ASNC@EmpowerLA.org","213-978-1551",2002-10-02,"ARROYO SECO NC","navigatela/reports/nc_reports.cfm?id=42","REGION 8 - NORTH EAST LA"
 4,"ATWATER VILLAGE NC","ATWATER VILLAGE NC","ATWATER VILLAGE NC",37,"http://www.atwatervillage.org/","http://empowerla.org/AVNC","AVNC@EmpowerLA.org","213-978-1551",2003-02-11,"ATWATER VILLAGE NC","navigatela/reports/nc_reports.cfm?id=37","REGION 7 - EAST"

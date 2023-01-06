@@ -21,7 +21,7 @@ data_geos = readxl::read_excel("../LADOT/CPRA #22-10589 Data/2019 Neighborhood C
 
 ## Connect output table and old NC geos
 temp = data.frame(
-  output_nc_name = sort(unique(data_geos$`Origin\\Destination`)),
+  data_nc_name = sort(unique(data_geos$`Origin\\Destination`)),
   old_nc_name = sort(unique(nc_geos_old$name)))
 rm(data_geos)
 
@@ -45,16 +45,16 @@ temp1 %>% count(SERVICE_RE)
 ## Create reference table. Join the output_nc_names with old NC and new NC geo names.
 nc_geo_ref = temp %>% 
   left_join(temp1, by = c("old_nc_name" = "old_nc_name")) %>% 
-  select(output_nc_name, old_nc_name, new_nc_name, nc_id) %>% 
+  select(data_nc_name, old_nc_name, new_nc_name, nc_id) %>% 
   left_join(nc_geos, by = c("nc_id" = "NC_ID")) %>% 
-  select(OBJECTID, output_nc_name, old_nc_name, new_nc_name, nc_id, WADDRESS:geometry)
+  select(OBJECTID, data_nc_name, old_nc_name, new_nc_name, nc_id, WADDRESS:geometry)
 
 rm(temp, temp1, nc_geos, nc_geos_old)
 
 
 ## Export reference table for future use. 
-# st_write(nc_geo_ref, "NC_OldtoNew_Ref.geojson")
+# st_write(nc_geo_ref, "NC_OldtoNew_Ref.geojson", append = FALSE)
 # 
-# nc_geo_ref %>% 
-#   select(-geometry) %>% 
+# nc_geo_ref %>%
+#   select(-geometry) %>%
 #   write.csv(file = "NC_OldtoNew_Ref.csv", row.names = FALSE)
