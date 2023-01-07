@@ -100,12 +100,49 @@ nc_geos_full %>% count(origin_data_nc_name) %>% count(n) # n == nn
 data_output %>% count(month) %>% count(n) # 45 unique months
 data_output %>% count(origin_nc_id) %>% count(n) # n = 4455; nn = 99
 
+
+# Check Summary Stats ########
+data_output %>% 
+  filter(origin_new_nc_name == 'VENICE NC', month == '2019-01-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Venice Jan 2019
+
+data_output %>% 
+  filter(origin_new_nc_name == 'EAST HOLLYWOOD NC', month == '2019-06-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # East Hollywood June 2019
+## different from the excel workbook
+
+data_output %>% 
+  filter(origin_new_nc_name == 'UNITED NEIGHBORHOODS OF THE HISTORIC ARLINGTON HEIGHTS', month == '2020-02-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # United neighborhoods of the Historic Arlington Heights Feb 2020
+## cannot find in the origin_new_nc_name column
+
+data_output %>% 
+  filter(origin_new_nc_name == 'MID CITY WEST CC', month == '2020-07-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Mid City West CC July 2020
+## different from the excel workbook
+
+data_output %>% 
+  filter(origin_new_nc_name == 'EAST HOLLYWOOD NC', month == '2021-03-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # East Hollywood Mar 2021
+
+data_output %>% 
+  filter(origin_new_nc_name == 'ELYSIAN VALLEY RIVERSIDE NC', month == '2021-08-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Elysian Valley Riverside Aug 2021
+## different from the excel workbook
+
+data_output %>% 
+  filter(origin_new_nc_name == 'SHERMAN OAKS NC', month == '2022-04-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Sherman Oaks Apr 2022
+
+data_output %>% 
+  filter(origin_new_nc_name == 'EAGLE ROCK NC', month == '2022-09-01') %>% 
+  summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Eagle Rock Sep 2022
+
 # Export ########
 # write.csv(nc_geos_full, file = "OD_by_NCs_Trips.csv")
 
 # Scratch ########
 
 # TO DO ########
-## check summary stats
 ## remove geos from export since .shp and .geojson cannot have more than 1 geometry column
 ## make sure mapping team has everything they need to map all possible OD combos based on this .csv and the reference .geojson file.
