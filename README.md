@@ -7,11 +7,12 @@
 - Nick Perloff-Giles
 
 ## Client: 
-Los Angeles Department of Transportation
-Main Contact:
-Elizabeth Winter
-Transportation Planning Associate II
-For-Hire Policy and Enforcement Division
+Los Angeles Department of Transportation  
+
+**Main Contact:**  
+Elizabeth Winter  
+Transportation Planning Associate II  
+For-Hire Policy and Enforcement Division  
 
 ## Advisor:
 Professor Joshua Schank
