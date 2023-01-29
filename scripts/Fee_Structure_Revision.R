@@ -1,186 +1,196 @@
-#Masa currently working. Please do not alter the content below.
-
 ###Policy Option (Fee Structure Revision)###
 
-##################################################
+#####################################################
 ### Preliminary Steps
-##################################################
+#####################################################
 library(tidyverse)
 library(readxl)
 getwd()
 setwd("C:/APP/APP")  #Absolute file path. Switch to relative file path.
 trips_per_zone_fy21to22_init <- read_excel(path = "./data/LADOT/CPRA #22-10589 Data/New Trip Geography Origin-Dest.xlsx",
-           sheet = "FY 21-22",
-           skip = 2)
+                                           sheet = "FY 21-22",
+                                           skip = 2)
 
 trips_per_zone_fy21to22_init2 <- trips_per_zone_fy21to22_init %>%
   select("Trip Origin and Destination", "Total")
 
-trips_per_zone_fy21to22 <- trips_per_zone_fy21to22_init2[-c(26),] # Deleted the Totals row
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22_init2[-c(13,26),] # Deleted the Out-of-bound~Out^of-bound and Totals rows
 
 rm(trips_per_zone_fy21to22_init, trips_per_zone_fy21to22_init2) #Remove unnecessary objects
 
-##################################################
-### Calculate LADOT's Revenue (Status quo version)
-##################################################
-trips_per_zone_fy21to22_status_quo <- trips_per_zone_fy21to22 %>% mutate(trip_fee = case_when(
-  `Trip Origin and Destination` == "EFMDD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - MDD" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - Out_of_Bound" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - SOZ" ~ 0,
-  `Trip Origin and Destination` == "EFMDD -SPD" ~ 0,
-  `Trip Origin and Destination` == "MDD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "MDD - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - Out_of_Bound" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - SOZ" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - SPD" ~ 0.06,
-  `Trip Origin and Destination` == "Out_of_Bound - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "Out_of_Bound - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "Out_of_Bound - Out_of_Bound" ~ 0,
-  `Trip Origin and Destination` == "Out_of_Bound - SOZ" ~ 0.40,
-  `Trip Origin and Destination` == "Out_of_Bound - SPD" ~ 0.20,
-  `Trip Origin and Destination` == "SOZ - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "SOZ - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "SOZ - Out_of_Bound" ~ 0.40,
-  `Trip Origin and Destination` == "SOZ - SOZ" ~ 0.40,
-  `Trip Origin and Destination` == "SOZ - SPD" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "SPD - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "SPD - Out_of_Bound" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - SOZ" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - SPD" ~ 0.20))  #Setting current fee
+trips_per_zone_fy21to22 <- rename(trips_per_zone_fy21to22, Ridership = Total) #Renamed "Total" to "Ridership"
 
-trips_per_zone_fy21to22_status_quo <- trips_per_zone_fy21to22_status_quo %>%
-  mutate(LADOT_revenue = trip_fee * Total) #Calculating LADOT's revenue for each group under current fee
+#####################################################
+### Making Assumptions
+#####################################################
+current_fare <- 4.00
+change_in_soz_fee <- 0.50
+change_in_spd_fee <- 0.00
+change_in_mdd_fee <- 0.00
+change_in_efmdd_fee <- -0.10
+ped <- -0.45 #Price Elasticity of Demand
 
-LADOT_revenue_fy21to22_status_quo <- sum(trips_per_zone_fy21to22_status_quo$LADOT_revenue) #This is LADOT's current revenue.
+#####################################################
+### Current LADOT Fees on Operators
+#####################################################
+current_soz_fee <- 0.40
+current_spd_fee <- 0.20
+current_mdd_fee <- 0.06
+current_efmdd_fee <- 0.00
 
-###########################################################
-###Calculate LADOT's Increase in Revenue (SOZ fees doubled)
-###########################################################
-trips_per_zone_fy21to22_SOZ_double <- trips_per_zone_fy21to22 %>% mutate(trip_fee_soz_doubled = case_when(
-  `Trip Origin and Destination` == "EFMDD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - MDD" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - Out_of_Bound" ~ 0,
-  `Trip Origin and Destination` == "EFMDD - SOZ" ~ 0,
-  `Trip Origin and Destination` == "EFMDD -SPD" ~ 0,
-  `Trip Origin and Destination` == "MDD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "MDD - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - Out_of_Bound" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - SOZ" ~ 0.06,
-  `Trip Origin and Destination` == "MDD - SPD" ~ 0.06,
-  `Trip Origin and Destination` == "Out_of_Bound - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "Out_of_Bound - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "Out_of_Bound - Out_of_Bound" ~ 0,
-  `Trip Origin and Destination` == "Out_of_Bound - SOZ" ~ 0.80,
-  `Trip Origin and Destination` == "Out_of_Bound - SPD" ~ 0.20,
-  `Trip Origin and Destination` == "SOZ - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "SOZ - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "SOZ - Out_of_Bound" ~ 0.80,
-  `Trip Origin and Destination` == "SOZ - SOZ" ~ 0.80,
-  `Trip Origin and Destination` == "SOZ - SPD" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - EFMDD" ~ 0,
-  `Trip Origin and Destination` == "SPD - MDD" ~ 0.06,
-  `Trip Origin and Destination` == "SPD - Out_of_Bound" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - SOZ" ~ 0.20,
-  `Trip Origin and Destination` == "SPD - SPD" ~ 0.20)) #Doubling SOZ fee
+#####################################################
+### Calculating Changes in Ridership
+#####################################################
+change_in_soz_ridership <- (((change_in_soz_fee/current_fare)*100)*ped+100)/100
+change_in_spd_ridership <- (((change_in_spd_fee/current_fare)*100)*ped+100)/100
+change_in_mdd_ridership <- (((change_in_mdd_fee/current_fare)*100)*ped+100)/100
+change_in_efmdd_ridership <- (((change_in_efmdd_fee/current_fare)*100)*ped+100)/100
 
-# ASSUMPTION 1 (SOZ fees doubled. Could be other fees as well.Also possible to increase fees on SPZ but personally against it)
 
-ped <- -0.45
-#ASSUMPTION 2 (assuming that the price elasticity of demand is -0.45,meaning that 1% increase in the price is associated with -0.45% increase in ridership)
+#####################################################
+### Deriving Current Revenues for LADOT and Operators
+#####################################################
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22 %>%
+  mutate(Current_Fare = current_fare) %>%
+  mutate(Current_Fee = case_when(
+    `Trip Origin and Destination` == "EFMDD - EFMDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "EFMDD - MDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "EFMDD - Out_of_Bound" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "EFMDD - SOZ" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "EFMDD -SPD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "MDD - EFMDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "MDD - MDD" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "MDD - Out_of_Bound" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "MDD - SOZ" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "MDD - SPD" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "Out_of_Bound - EFMDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "Out_of_Bound - MDD" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "Out_of_Bound - SOZ" ~ current_soz_fee,
+    `Trip Origin and Destination` == "Out_of_Bound - SPD" ~ current_spd_fee,
+    `Trip Origin and Destination` == "SOZ - EFMDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "SOZ - MDD" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "SOZ - Out_of_Bound" ~ current_soz_fee,
+    `Trip Origin and Destination` == "SOZ - SOZ" ~ current_soz_fee,
+    `Trip Origin and Destination` == "SOZ - SPD" ~ current_spd_fee,
+    `Trip Origin and Destination` == "SPD - EFMDD" ~ current_efmdd_fee,
+    `Trip Origin and Destination` == "SPD - MDD" ~ current_mdd_fee,
+    `Trip Origin and Destination` == "SPD - Out_of_Bound" ~ current_spd_fee,
+    `Trip Origin and Destination` == "SPD - SOZ" ~ current_spd_fee,
+    `Trip Origin and Destination` == "SPD - SPD" ~ current_spd_fee)) %>%
+  mutate(Current_LADOT_Revenue = Ridership*Current_Fee) %>%
+  mutate(Current_Operator_Revenue = Ridership*Current_Fare)
 
-fare_status_quo <- 4
-increase_in_soz_fee <- 0.4
-new_fare_soz <- fare_status_quo+increase_in_soz_fee
-#ASSUMPTION 3 (assuming that fare, including fees imposed by LADOT, for each trip is 4. As a result in $0.40 rise in SOZ fees, the fare for SOZ is $4.40)
-#What value to set status quo fare is TBD
+#####################################################
+### Making Revised Fee and Fare Column
+#####################################################
+revised_fee_temp <- c(current_efmdd_fee+change_in_efmdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_soz_fee+change_in_soz_fee,
+                      current_spd_fee+change_in_spd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_soz_fee+change_in_soz_fee,
+                      current_soz_fee+change_in_soz_fee,
+                      current_spd_fee+change_in_spd_fee,
+                      current_efmdd_fee+change_in_efmdd_fee,
+                      current_mdd_fee+change_in_mdd_fee,
+                      current_spd_fee+change_in_spd_fee,
+                      current_spd_fee+change_in_spd_fee,
+                      current_spd_fee+change_in_spd_fee)
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22 %>%
+  mutate(Revised_Fee = revised_fee_temp)
+revised_fare_temp <- c(change_in_efmdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_mdd_fee,
+                       change_in_mdd_fee,
+                       change_in_mdd_fee,
+                       change_in_mdd_fee,
+                       change_in_efmdd_fee,
+                       change_in_mdd_fee,
+                       change_in_soz_fee,
+                       change_in_spd_fee,
+                       change_in_efmdd_fee,
+                       change_in_mdd_fee,
+                       change_in_soz_fee,
+                       change_in_soz_fee,
+                       change_in_spd_fee,
+                       change_in_efmdd_fee,
+                       change_in_mdd_fee,
+                       change_in_spd_fee,
+                       change_in_spd_fee,
+                       change_in_spd_fee)
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22 %>%
+  mutate(Revised_Fare = Current_Fare+revised_fare_temp)
 
-change_in_soz_ridership <- (100+ped*(100*(new_fare_soz-fare_status_quo)/fare_status_quo))/100
-print(change_in_soz_ridership)
-#This means that the ridership will be 0.955 times in response to the price increase in SOZ
+#####################################################
+### Making the New Ridership Column
+#####################################################
+change_in_ridership_temp <- c(change_in_efmdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_soz_ridership,
+                              change_in_spd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_soz_ridership,
+                              change_in_soz_ridership,
+                              change_in_spd_ridership,
+                              change_in_efmdd_ridership,
+                              change_in_mdd_ridership,
+                              change_in_spd_ridership,
+                              change_in_spd_ridership,
+                              change_in_spd_ridership)
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22 %>%
+  mutate(New_Ridership = Ridership*change_in_ridership_temp)
 
-trips_per_zone_fy21to22_SOZ_double <- trips_per_zone_fy21to22_SOZ_double %>%
-  mutate(new_ridership = case_when(
-    `Trip Origin and Destination` == "EFMDD - EFMDD" ~ Total,
-    `Trip Origin and Destination` == "EFMDD - MDD" ~ Total,
-    `Trip Origin and Destination` == "EFMDD - Out_of_Bound" ~ Total,
-    `Trip Origin and Destination` == "EFMDD - SOZ" ~ Total,
-    `Trip Origin and Destination` == "EFMDD -SPD" ~ Total,
-    `Trip Origin and Destination` == "MDD - EFMDD" ~ Total,
-    `Trip Origin and Destination` == "MDD - MDD" ~ Total,
-    `Trip Origin and Destination` == "MDD - Out_of_Bound" ~ Total,
-    `Trip Origin and Destination` == "MDD - SOZ" ~ Total,
-    `Trip Origin and Destination` == "MDD - SPD" ~ Total,
-    `Trip Origin and Destination` == "Out_of_Bound - EFMDD" ~ Total,
-    `Trip Origin and Destination` == "Out_of_Bound - MDD" ~ Total,
-    `Trip Origin and Destination` == "Out_of_Bound - Out_of_Bound" ~ Total,
-    `Trip Origin and Destination` == "Out_of_Bound - SOZ" ~ Total*change_in_soz_ridership,
-    `Trip Origin and Destination` == "Out_of_Bound - SPD" ~ Total,
-    `Trip Origin and Destination` == "SOZ - EFMDD" ~ Total,
-    `Trip Origin and Destination` == "SOZ - MDD" ~ Total,
-    `Trip Origin and Destination` == "SOZ - Out_of_Bound" ~ Total*change_in_soz_ridership,
-    `Trip Origin and Destination` == "SOZ - SOZ" ~ Total*change_in_soz_ridership,
-    `Trip Origin and Destination` == "SOZ - SPD" ~ Total,
-    `Trip Origin and Destination` == "SPD - EFMDD" ~ Total,
-    `Trip Origin and Destination` == "SPD - MDD" ~ Total,
-    `Trip Origin and Destination` == "SPD - Out_of_Bound" ~ Total,
-    `Trip Origin and Destination` == "SPD - SOZ" ~ Total,
-    `Trip Origin and Destination` == "SPD - SPD" ~ Total)) #Derived each groups new ridership. Groups with SOZ decreased in ridership by 0.955 times.
+#####################################################
+### Deriving New Revenues for LADOT and Operators
+#####################################################
+trips_per_zone_fy21to22 <- trips_per_zone_fy21to22 %>%
+  mutate(New_LADOT_Revenue = New_Ridership*Revised_Fee) %>%
+  mutate(New_Operator_Revenue = New_Ridership*Revised_Fare)
 
-trips_per_zone_fy21to22_SOZ_double <- trips_per_zone_fy21to22_SOZ_double %>%
-  mutate(LADOT_new_revenue = new_ridership * trip_fee_soz_doubled) #Derived each group's revenue for LADOT.
+#####################################################
+### Showing the Results
+#####################################################
+change_in_LADOT_Revenue <- sum(trips_per_zone_fy21to22$New_LADOT_Revenue)-sum(trips_per_zone_fy21to22$Current_LADOT_Revenue)
+change_in_Operator_Revenue <- sum(trips_per_zone_fy21to22$New_Operator_Revenue)-sum(trips_per_zone_fy21to22$Current_Operator_Revenue)
+change_in_Ridership <- sum(trips_per_zone_fy21to22$New_Ridership)-sum(trips_per_zone_fy21to22$Ridership)
 
-LADOT_revenue_fy21to22_SOZ_doubled <- sum(trips_per_zone_fy21to22_SOZ_double$LADOT_new_revenue) #LADOT's revenue after SOZ fees doubled
+#####################################################
+### Exporting Excel
+#####################################################
+write_csv(x = trips_per_zone_fy21to22,
+          path = "./output_figures/Fee_Revision_Output.csv")
 
-rev_increase_soz_doubled <- LADOT_revenue_fy21to22_SOZ_doubled - LADOT_revenue_fy21to22_status_quo #Increase in LADOT's revenue after SOZ fees doubled
 
-#####################################################################
-###Calculating LADOT's Cost to Subsidize EFMDD Trips
-#####################################################################
-trips_per_zone_fy21to22_EFMDD_subsidized <- trips_per_zone_fy21to22[c(1,2,3,4,5,6,11,16,21),] #Filtering only EFMDD trips
+#####################################################
+### Printing the Results
+#####################################################
 
-subsidy_amount <- -0.1
-trips_per_zone_fy21to22_EFMDD_subsidized <- trips_per_zone_fy21to22_EFMDD_subsidized %>%
-  mutate(fee_reduction = subsidy_amount)
-new_fare_EFMDD <- fare_status_quo+subsidy_amount
-#ASSUMPTION 5 (assume that each EFMDD trip is subsidized by 10 cents. As a result, fare for EFMDD is $3.90. Could be other amount as well. TBD)
-
-change_in_EFMDD_ridership <- (100+ped*(100*(new_fare_EFMDD-fare_status_quo)/fare_status_quo))/100
-print(change_in_EFMDD_ridership)
-#This means that the ridership will be 1.01125 times in response to fare being subsidized.
-
-trips_per_zone_fy21to22_EFMDD_subsidized <- trips_per_zone_fy21to22_EFMDD_subsidized %>%
-  mutate(new_ridership = Total * change_in_EFMDD_ridership) #Calculating increased ridership due to subsidy
-
-trips_per_zone_fy21to22_EFMDD_subsidized <- trips_per_zone_fy21to22_EFMDD_subsidized %>%
-  mutate(cost_for_subsidy = new_ridership * fee_reduction)
-
-total_cost_for_subsidy <- sum(trips_per_zone_fy21to22_EFMDD_subsidized$cost_for_subsidy)
-
-#####################################################################
-###Compare cost for subsidy and increase in revenue
-#####################################################################
-print(total_cost_for_subsidy)
-print(rev_increase_soz_doubled)
-print(rev_increase_soz_doubled+total_cost_for_subsidy)
-
-#####################################################################
-###Compare Operator's Revenues
-#####################################################################
-trips_per_zone_fy21to22_operator_revenue_post_fee_rev <- trips_per_zone_fy21to22_SOZ_double %>%
-  select("Trip Origin and Destination", trip_fee_soz_doubled) %>%
-  mutate(fare = recode(trip_fee_soz_doubled,
-                       "0.00" = fare_status_quo+subsidy_amount,
-                       "0.06" = fare_status_quo,
-                       "0.20" = fare_status_quo,
-                       "0.80" = fare_status_quo+increase_in_soz_fee)) %>% #Derived average fares for each group.
-  select(-trip_fee_soz_doubled) #Delete unnecessary column.
-
-trips_per_zone_fy21to22_operator_revenue_post_fee_rev <- trips_per_zone_fy21to22_operator_revenue_post_fee_rev %>%
-  mutate(new_ridership = trips_per_zone_fy21to22_SOZ_double$new_ridership)
-
-trips_per_zone_fy21to22_operator_revenue_post_fee_rev <- trips_per_zone_fy21to22_operator_revenue_post_fee_rev %>%
-  mutate(new_ridership2 = ifelse(fare == fare_status_quo+subsidy_amount, NA, new_ridership))
-
-         
+print(change_in_LADOT_Revenue)
+print(change_in_Operator_Revenue)
+print(change_in_Ridership)
