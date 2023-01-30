@@ -16,3 +16,6 @@ For-Hire Policy and Enforcement Division
 
 ## Advisor:
 Professor Joshua Schank
+
+## Policy Question
+What are the policy options that LADOT can pursue within the current LADOT micromobility program and in future micromobility policies to improve access to dockless vehicles in the San Fernando Valley?
