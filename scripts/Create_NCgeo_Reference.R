@@ -62,11 +62,10 @@ rm(temp, temp1, nc_geos_new, nc_geos_old)
 
 
 ## Export table #### 
-# st_write(nc_geo_ref, 
-#          file.path(output_path, 'NC_OldtoNew_Ref.geojson'), 
-#          delete_dsn = TRUE)
-# 
-# nc_geo_ref %>%
-#   select(-geometry) %>%
-#   write.csv(file.path(output_path, 'NC_OldtoNew_Ref.csv'), row.names = FALSE)
+st_write(nc_geo_ref,
+         file.path(output_path, 'NC_OldtoNew_Ref.geojson'),
+         delete_dsn = TRUE)
 
+nc_geo_ref %>%
+  select(-geometry) %>%
+  write.csv(file.path(output_path, 'NC_OldtoNew_Ref.csv'), row.names = FALSE)
