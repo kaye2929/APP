@@ -1,4 +1,4 @@
-############### Script for Cleaning LADOT Data - OD by NCs ################
+############### Script for Cleaning LADOT Data - OD by NCs ###
 
 # Set Up ########
 rm(list = ls())
@@ -8,11 +8,19 @@ lapply(packages, library, character.only = TRUE)
 rm(packages)
 
 
+## directory paths
+data_path <- file.path('..','data')
+output_path <- file.path('..','output','files')
+
+
 # Prep Geos #######
-## read NC geos
-nc_geos = st_read("../../data/geos/NC_OldtoNew_Ref.geojson")
+## load NC geos
+nc_geos = sf::st_read(file.path(output_path,'NC_OldtoNew_Ref.geojson'))
+
 
 ## create df with all OD pairs of NCs using `nc_id`
+### resulting dataframe contains every possible pairwise combination of NC IDs 
+### purpose: we want to be able to make a map for each NC to show the number of trips started or ended in that specific NC.
 nc_geos_full = NULL
 for (i in nc_geos$nc_id) {
   for (j in nc_geos$nc_id) {
@@ -25,60 +33,61 @@ for (i in nc_geos$nc_id) {
 }
 rm(i,j)
 
-## join the names and geos to both the origin and destination ID
+## DONT JOIN GEOS####
+# FIND SOMEWHERE AT END TO INSERT GEOS. MAYBE MAKE 2 GEOJSON FILES, ONE FOR START, ONE FOR END.
+
+## join the names to both the origin and destination ID
 nc_geos_full = nc_geos_full %>% 
   
-  ## join NC names and geos for origin NCs
-  left_join(nc_geos %>% 
-              select(data_nc_name, new_nc_name, geometry, nc_id),
+  ## join NC names for origin NCs
+  left_join(nc_geos %>%
+              data.frame() %>% # turn into df otherwise the geometry will be automatically added
+              select(data_nc_name, new_nc_name, nc_id),
             by = c("origin_nc_id" = "nc_id")) %>% 
-  rename_at(vars(data_nc_name, new_nc_name, geometry),
-            function(x) {paste("origin_",x,sep = "")}) %>% 
+  rename_at(vars(data_nc_name, new_nc_name),
+            function(x) {paste("origin_",x,sep = "")}) %>% # rename the two columns with starting with "origin"
   
-  ## join NC names and geos for dest NCs
+  ## join NC names for dest NCs
   left_join(nc_geos %>% 
-              select(data_nc_name, new_nc_name, geometry, nc_id),
+              data.frame() %>% 
+              select(data_nc_name, new_nc_name, nc_id),
             by = c("dest_nc_id" = "nc_id")) %>% 
-  rename_at(vars(data_nc_name, new_nc_name, geometry),
-            function(x) {paste("dest_",x,sep = "")}) 
-  
+  rename_at(vars(data_nc_name, new_nc_name),
+            function(x) {paste("dest_",x,sep = "")}) # rename the two columns with starting with "dest"
 
 
 # Cleaning ########
 ## Loop through each of the sheets in the 4 excel workbooks. Obtain and transform data
 
+## Set Up
 years <- c("2019","2020","2021","2022") # the four years of the different workbooks
-
 data_output <- NULL
 
 ## Begin Loop
 for (yr in years) {
-  # create path to the workbook with a specific year
-  path_name <- paste("../../data/LADOT/CPRA #22-10589 Data/", yr, " Neighborhood Council Trip Matrix.xlsx", sep = "")  
-  
+
   # obtain all the sheet names within the specific workbook
-  sheet_names <- readxl::excel_sheets(path_name)
+  sheet_names <- readxl::excel_sheets(file.path(data_path,'CPRA #22-10589 Data', paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " "))) # `paste()` function allows us to call each year's workbook in the loop
   
   for (one_month in sheet_names) {
     
     # read workbook, rename first column, pivot wider
-    temp_output <- readxl::read_excel(path_name, sheet = one_month) %>% 
+    temp_output <- readxl::read_excel(file.path(data_path,'CPRA #22-10589 Data', paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " ")), sheet = one_month) %>% 
       rename("origin_nc" = "Origin\\Destination") %>% 
       pivot_longer(cols = -c("origin_nc"), names_to = "dest_nc", values_to = "trips")  
     
     # print message to show status in console
-    print(paste("Extracted trip data for", one_month, yr, sep = " "))
+    print(paste("Loaded trip data for", one_month, yr, sep = " "))
     
     # right join the workbook data to the df with all OD pair combos
     data_output = temp_output %>% 
       right_join(nc_geos_full, by = c("origin_nc" = "origin_data_nc_name",
                                       "dest_nc" = "dest_data_nc_name")) %>% 
       
-      # replace NAs with o
-      mutate_at(vars(trips), function(x) {ifelse(is.na(x),0,x)}) %>% 
-      
+      # replace NAs with 0
       # add month for each observation based on the sheet it came from
-      mutate(month = lubridate::mdy(paste(one_month,"1",yr))) %>% 
+      mutate(trips = ifelse(is.na(trips),0,trips),
+             month = lubridate::mdy(paste(one_month,"1",yr))) %>% 
       
       # append data
       bind_rows(data_output)
@@ -92,8 +101,9 @@ rm(yr,years,one_month,path_name,sheet_names,temp_output)
 
 ## Select columns and rearrange the order
 data_output = data_output %>% 
-  select(month, origin_new_nc_name, origin_nc_id, dest_new_nc_name, dest_nc_id, trips, origin_geometry, dest_geometry) %>% 
+  select(month, origin_new_nc_name, origin_nc_id, dest_new_nc_name, dest_nc_id, trips) %>% 
   arrange(month, origin_nc_id, dest_nc_id)
+
 
 # Check Work ########
 nc_geos_full %>% count(origin_data_nc_name) %>% count(n) # n == nn
@@ -107,7 +117,7 @@ data_output %>%
   summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # Venice Jan 2019
 
 data_output %>% 
-  filter(origin_new_nc_name == 'EAST HOLLYWOOD NC', month == '2019-06-01') %>% 
+  filter(dest_new_nc_name == 'EAST HOLLYWOOD NC', month == '2019-06-01') %>% 
   summarise(sum = sum(trips), mean = mean(trips), sd = sd(trips)) # East Hollywood June 2019
 ## different from the excel workbook
 
