@@ -2,17 +2,21 @@
 # Reorganize version
 
 ## load packages
-pacman::p_load(tidyverse, readxl, lubridate)
+pacman::p_load(tidyverse, readxl, lubridate, sf)
 
 ## directory paths
 data_path <- file.path('.','data')
+file_path <- file.path('.', 'output/files/')
+sheet_path <- file.path(data_path, 'CPRA #22-10589 Data', 'Vehicle Deployment. Neighborhood Council Districts.xlsx')
+
+# read ref file
+ref <- read_csv(file = file.path(file_path, 'NC_OldtoNew_Ref.csv'))
 
 ## loop 
 years <- c("2019","2020","2021","2022")
-sheet_path <- file.path(data_path, 'CPRA #22-10589 Data', 'Vehicle Deployment. Neighborhood Council Districts.xlsx')
+ref_sub <- ref %>% select(old_nc_name, new_nc_name, nc_id)
 data_output <- NULL
 data_output2 <- NULL
-
 
 for (yr in years) {
   
@@ -20,20 +24,21 @@ for (yr in years) {
   vd <- read_excel(path = sheet_path, sheet = paste('Deployment', yr, sep = " "), skip = 1) %>% 
     pivot_longer(cols = -c('Neighborhood Council District'), names_to = 'month', values_to = 'Avg deployment') 
 
+  # output of pivot long format
   data_output <- vd %>% 
     mutate(Month = mdy(paste(month,"1",yr))) %>% 
     
     # append data
     bind_rows(data_output)
   
-  # pivot wide
+  # output of pivot wide format
   data_output2 <- data_output %>% 
     mutate(year = year(Month),
            month_year = paste(month, year, sep = '_')) %>% 
     select('Neighborhood Council District', 'Avg deployment', 'month_year') %>% 
     pivot_wider(names_from = month_year, 
                 values_from = 'Avg deployment')
-
+    
   }
 
 
@@ -41,6 +46,19 @@ for (yr in years) {
 data_output <- data_output %>% 
   select('Neighborhood Council District', 'Month', 'Avg deployment')
 
-## Export data
-#write_csv(data_output, file = file.path())
-#write_csv(data_output2, file = file.path())
+# add new nc name and nc id
+data_output <- ref_sub %>% left_join(data_output, by = c('old_nc_name' = 'Neighborhood Council District'))
+data_output2 <- ref_sub %>% left_join(data_output2, by = c('old_nc_name' = 'Neighborhood Council District'))
+
+## Export data (csv and geojson)
+# geojson
+st_write(data_output,
+         file.path(file_path, 'vehicle_deployment_long.geojson'),
+         delete_dsn = TRUE)
+st_write(data_output2,
+         file.path(file_path, 'vehicle_deployment_wide.geojson'),
+         delete_dsn = TRUE)
+
+# csv
+write.csv(data_output, file = file.path(file_path, 'vehicle_deployment_long.csv'), row.names = F)
+write.csv(data_output2, file = file.path(file_path, 'vehicle_deployment_wide.csv'), row.names = F)
