@@ -6,11 +6,11 @@ pacman::p_load(tidyverse, readxl, lubridate, sf)
 
 ## directory paths
 data_path <- file.path('.','data')
-file_path <- file.path('.', 'output/files/')
+file_path <- file.path('.', 'output/files')
 sheet_path <- file.path(data_path, 'CPRA #22-10589 Data', 'Vehicle Deployment. Neighborhood Council Districts.xlsx')
 
 # read ref file
-ref <- read_csv(file = file.path(file_path, 'NC_OldtoNew_Ref.csv'))
+ref <- st_read(file.path(file_path, 'NC_OldtoNew_Ref.geojson'))
 
 ## loop 
 years <- c("2019","2020","2021","2022")
