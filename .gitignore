@@ -50,5 +50,4 @@ po/*~
 rsconnect/
 
 # Files to ignore 
-/data/demos
-/data/geos
+*.Rproj
