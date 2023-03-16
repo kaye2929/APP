@@ -1,4 +1,6 @@
 ################ Clean NC Geos ###
+# Author: Abraham Cheung
+
 ## Set Up ########
 ## Packages
 pacman::p_load("tidyverse","readxl","sf","ggsflabel","units","gghighlight")
@@ -148,11 +150,12 @@ SOZ_df =
 nc_georef_wSOZ <- bind_rows(nc_georef_noSOZ,SOZ_df)
 rm(SOZ_df)
 
-## Export GeoJSON ####
-st_write(nc_georef_noSOZ,
-         file.path(output_path, 'NCZone_GeoRef_noSOZ.geojson'),
-         delete_dsn = TRUE)
+## Save as RData ####
+## not exporting so that the two geojson files can be brought into ACS script to pull the ACS data and then do a spatial join
 
-st_write(nc_georef_wSOZ,
-         file.path(output_path, 'NCZone_GeoRef_wSOZ.geojson'),
-         delete_dsn = TRUE)
+## turn into sf class object
+nc_georef_noSOZ <- st_as_sf(nc_georef_noSOZ)
+nc_georef_wSOZ <- st_as_sf(nc_georef_wSOZ)
+
+## Save
+# save(nc_georef_noSOZ,nc_georef_wSOZ,file = file.path(output_path,"NCZone_GeoRef.RData"))
