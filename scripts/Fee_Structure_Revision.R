@@ -10,8 +10,8 @@ library(readxl)
 getwd()
 setwd("C:/APP/APP")  #Absolute file path. Switch to relative file path.
 trips_per_zone_fy21to22_init <- read_excel(path = "./data/LADOT/CPRA #22-10589 Data/New Trip Geography Origin-Dest.xlsx",
-                                           sheet = "FY 21-22",
-                                           skip = 2)
+           sheet = "FY 21-22",
+           skip = 2)
 
 trips_per_zone_fy21to22_init2 <- trips_per_zone_fy21to22_init %>%
   select("Trip Origin and Destination", "Total")
@@ -183,3 +183,4 @@ trips_per_zone_fy21to22_operator_revenue_post_fee_rev <- trips_per_zone_fy21to22
 trips_per_zone_fy21to22_operator_revenue_post_fee_rev <- trips_per_zone_fy21to22_operator_revenue_post_fee_rev %>%
   mutate(new_ridership2 = ifelse(fare == fare_status_quo+subsidy_amount, NA, new_ridership))
 
+         
