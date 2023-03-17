@@ -1,29 +1,29 @@
 ############### Script for Cleaning LADOT Data - OD by NCs ###
+# Author: Abraham Cheung
 
 # Set Up ########
 rm(list = ls())
 ## load packages
-packages <- c("tidyverse", "readxl", "lubridate", "sf")
-lapply(packages, library, character.only = TRUE)
-rm(packages)
+pacman::p_load("tidyverse", "readxl", "lubridate", "sf")
 
 
 ## directory paths
-data_path <- file.path('..','data')
-output_path <- file.path('..','output','files')
+cpra_dir <- file.path('.','data','CPRA #22-10589 Data')
+data_files_dir <- file.path('.','output','files')
 
 
 # Prep Geos #######
 ## load NC geos
-nc_geos = sf::st_read(file.path(output_path,'NC_OldtoNew_Ref.geojson'))
-
+nc_georef_noSOZ = sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_noSOZ.geojson")) %>% 
+  rename(new_nc_name = cert_name)
 
 ## create df with all OD pairs of NCs using `nc_id`
 ### resulting dataframe contains every possible pairwise combination of NC IDs 
 ### purpose: we want to be able to make a map for each NC to show the number of trips started or ended in that specific NC.
+
 nc_geos_full = NULL
-for (i in nc_geos$nc_id) {
-  for (j in nc_geos$nc_id) {
+for (i in nc_georef_noSOZ$NC_ID) {
+  for (j in nc_georef_noSOZ$NC_ID) {
     nc_geos_full = data.frame(
       origin_nc_id = i,
       dest_nc_id = j) %>% 
@@ -38,18 +38,18 @@ rm(i,j)
 nc_geos_full = nc_geos_full %>% 
   
   ## join NC names for origin NCs
-  left_join(nc_geos %>%
+  left_join(nc_georef_noSOZ %>%
               data.frame() %>% # turn into df otherwise the geometry will be automatically added
-              select(data_nc_name, new_nc_name, nc_id),
-            by = c("origin_nc_id" = "nc_id")) %>% 
+              select(data_nc_name, new_nc_name, NC_ID),
+            by = c("origin_nc_id" = "NC_ID")) %>% 
   rename_at(vars(data_nc_name, new_nc_name),
             function(x) {paste("origin_",x,sep = "")}) %>% # rename the two columns with starting with "origin"
   
   ## join NC names for dest NCs
-  left_join(nc_geos %>% 
+  left_join(nc_georef_noSOZ %>% 
               data.frame() %>% 
-              select(data_nc_name, new_nc_name, nc_id),
-            by = c("dest_nc_id" = "nc_id")) %>% 
+              select(data_nc_name, new_nc_name, NC_ID),
+            by = c("dest_nc_id" = "NC_ID")) %>% 
   rename_at(vars(data_nc_name, new_nc_name),
             function(x) {paste("dest_",x,sep = "")}) # rename the two columns with starting with "dest"
 
@@ -65,12 +65,12 @@ data_output <- NULL
 for (yr in years) {
 
   # obtain all the sheet names within the specific workbook
-  sheet_names <- readxl::excel_sheets(file.path(data_path,'CPRA #22-10589 Data', paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " "))) # `paste()` function allows us to call each year's workbook in the loop
+  sheet_names <- readxl::excel_sheets(file.path(cpra_dir, paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " "))) # `paste()` function allows us to call each year's workbook in the loop
   
   for (one_month in sheet_names) {
     
     # read workbook, rename first column, pivot wider
-    temp_output <- readxl::read_excel(file.path(data_path,'CPRA #22-10589 Data', paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " ")), sheet = one_month) %>% 
+    temp_output <- readxl::read_excel(file.path(cpra_dir, paste(yr,'Neighborhood Council Trip Matrix.xlsx',sep = " ")), sheet = one_month) %>% 
       rename("origin_nc" = "Origin\\Destination") %>% 
       pivot_longer(cols = -c("origin_nc"), names_to = "dest_nc", values_to = "trips")  
     
@@ -103,6 +103,7 @@ data_output = data_output %>%
   arrange(month, origin_nc_id, dest_nc_id)
 
 
+###################################################
 # Check Work ########
 nc_geos_full %>% count(origin_data_nc_name) %>% count(n) # n == nn
 data_output %>% count(month) %>% count(n) # 45 unique months
@@ -161,9 +162,35 @@ data_output %>%
 
 # Export ########
 # As .csv
-# write.csv(data_output, file = file.path(output_path,"Trip_OD_by_NC.csv"))
+# write.csv(data_output, file = file.path(data_files_dir,"Trip_OD_by_NC.csv"),row.names = FALSE)
 
-# One .geojson file will contain the exported dataframe `data_output` with geos for origin NC. the other .geojsonfile will have geos for destination NC. We need to make two separate JSON files since we cannot have two geometry columns
+# Joining the geos to every observation makes the file extremely large. As a result, I was not able to export these .geojson. Once further analysis is done, such as limiting the time period for analysis or geographic granularity, then we can join the geographies again for mapping. 
 
-# TO DO ########
-## remove geos from export since .shp and .geojson cannot have more than 1 geometry column. each file has all the info. one has geos for origin. other has geos for dest
+# I am leaving this code here for future reference
+
+# Origin As .geojson
+# data_out_origin =
+#   data_output %>% 
+#   left_join(nc_georef_noSOZ %>% 
+#               select(NC_ID,geometry),
+#             by=c("origin_nc_id"="NC_ID")) %>% 
+#   rename(geometry_origin = geometry) %>% 
+#   st_as_sf(crs=26945) %>% 
+#   glimpse()
+# 
+# sf::st_write(data_out_origin,
+#              file.path(data_files_dir,"Trip_Origin_byNC.geojson"),
+#              delete_dsn=TRUE)
+
+# Destination as .geojson
+# data_out_dest =
+#   data_output %>% 
+#   left_join(nc_georef_noSOZ %>% 
+#               select(NC_ID,geometry),
+#             by=c("dest_nc_id"="NC_ID")) %>% 
+#   rename(geometry_dest = geometry) %>% 
+#   st_as_sf(crs=26945) %>% 
+#   glimpse()
+# 
+# sf::st_write(data_out_origin,
+#              file.path(data_files_dir,"Trip_Dest_byNC.geojson"))
