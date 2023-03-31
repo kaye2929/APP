@@ -1,67 +1,86 @@
-#Combine Vehicle Deployment Neighborhood Council Destricts Data to one sheet (both long and wide formats)
-# Reorganize version
+# Combine Vehicle Deployment Neighborhood Council Districts Data to one sheet (both long and wide formats)
 
+# Set up ##############################
 ## load packages
 pacman::p_load(tidyverse, readxl, lubridate, sf)
 
 ## directory paths
-data_path <- file.path('.','data')
-file_path <- file.path('.', 'output/files')
-sheet_path <- file.path(data_path, 'CPRA #22-10589 Data', 'Vehicle Deployment. Neighborhood Council Districts.xlsx')
+data_raw_dir <- file.path('.','data')
+data_files_dir <- file.path('.', 'output/files')
+sheet_path <- file.path(data_raw_dir, 'CPRA #22-10589 Data', 'Vehicle Deployment. Neighborhood Council Districts.xlsx')
 
 # read ref file
-ref <- st_read(file.path(file_path, 'NC_OldtoNew_Ref.geojson'))
+ref <- st_read(file.path(data_files_dir, 'NCZone_GeoRef_noSOZ.geojson'))
+ref_sub <- ref %>% as.data.frame() %>% select(data_nc_name, cert_name, NC_ID)
 
-## loop 
-years <- c("2019","2020","2021","2022")
-ref_sub <- ref %>% select(data_nc_name, new_nc_name, nc_id)
-data_output <- NULL
-data_output2 <- NULL
+
+## Loop through years to obtain and transform deployment data ############### 
+years <- 2019:2022
+depl_long <- NULL
+
 
 for (yr in years) {
   
-  # read sheets(pivot long)
+  # read sheets (pivot long)
   vd <- read_excel(path = sheet_path, sheet = paste('Deployment', yr, sep = " "), skip = 1) %>% 
-    pivot_longer(cols = -c('Neighborhood Council District'), names_to = 'month', values_to = 'Avg_deployment') 
+    pivot_longer(cols = -c('Neighborhood Council District'), names_to = 'month', values_to = 'avg_depl') 
 
   # output of pivot long format
-  data_output <- vd %>% 
-    mutate(Month = mdy(paste(month,"1",yr))) %>% 
+  depl_long <- vd %>% 
+    rename(nc_name = 'Neighborhood Council District') %>% 
+    mutate(month_yr = mdy(paste(month,1,yr))) %>% 
     
     # append data
-    bind_rows(data_output) %>% 
+    bind_rows(depl_long) %>% 
     
     # remove NAs
-    filter(!is.na(Avg_deployment))
+    filter(!is.na(avg_depl)) %>% 
+    select(-month)
   
   # output of pivot wide format
-  data_output2 <- data_output %>% 
-    mutate(year = year(Month),
-           month_year = paste(month, year, sep = '_')) %>% 
-    select('Neighborhood Council District', 'Avg_deployment', 'month_year') %>% 
-    pivot_wider(names_from = month_year, 
-                values_from = 'Avg_deployment')
-    
+  depl_wide <- depl_long %>% 
+    pivot_wider(names_from = month_yr, 
+                values_from = avg_depl) %>% 
+    select(nc_name,sort(names(.)))
   }
 
 
-## arrange data
-data_output <- data_output %>% 
-  select('Neighborhood Council District', 'Month', 'Avg_deployment') 
+# Add certified NC name and NC_ID #########################
+setdiff(unique(depl_long$nc_name),unique(ref_sub$data_nc_name)) 
+setdiff(unique(depl_wide$nc_name),unique(ref_sub$data_nc_name))
+# there are no differences between the NC names from the reference and data file
 
-# add new nc name and nc id
-data_output <- ref_sub %>% left_join(data_output, by = c('data_nc_name' = 'Neighborhood Council District'))
-data_output2 <- ref_sub %>% left_join(data_output2, by = c('data_nc_name' = 'Neighborhood Council District'))
+depl_long =
+  depl_long %>% 
+  left_join(ref_sub, by=c("nc_name"="data_nc_name"), keep=TRUE) %>% 
+  select(NC_ID,data_nc_name,cert_name,month_yr,avg_depl) %>% 
+  arrange(data_nc_name,month_yr) %>% 
+  glimpse()
+  
 
-## Export data (csv and geojson)
+depl_wide =
+  depl_wide %>% 
+  left_join(ref_sub, by=c("nc_name"="data_nc_name"), keep=TRUE) %>% 
+  select(-nc_name) %>% 
+  select(NC_ID,data_nc_name,cert_name,everything()) %>% 
+  glimpse()
+
+
+## Export data (csv and geojson) ####################
 # geojson
-st_write(data_output,
-         file.path(file_path, 'vehicle_deployment_long.geojson'),
-         delete_dsn = TRUE)
-st_write(data_output2,
-         file.path(file_path, 'vehicle_deployment_wide.geojson'),
-         delete_dsn = TRUE)
+
+# depl_long %>%
+#   left_join(ref %>% select(NC_ID),
+#             by="NC_ID") %>%
+#   st_write(file.path(data_files_dir, 'veh_depl_long.geojson'), delete_dsn = TRUE)
+
+
+# depl_wide %>%
+#   left_join(ref %>% select(NC_ID),
+#             by="NC_ID") %>% 
+#   st_write(file.path(data_files_dir, 'veh_depl_wide.geojson'), delete_dsn = TRUE)
+
 
 # csv
-write.csv(data_output, file = file.path(file_path, 'vehicle_deployment_long.csv'), row.names = F)
-write.csv(data_output2, file = file.path(file_path, 'vehicle_deployment_wide.csv'), row.names = F)
+# write.csv(depl_long, file = file.path(data_files_dir, 'veh_depl_long.csv'), row.names = F)
+# write.csv(depl_wide, file = file.path(data_files_dir, 'veh_depl_wide.csv'), row.names = F)
