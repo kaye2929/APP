@@ -1,0 +1,83 @@
+---
+title: "Correlation Check - Sharing Results"
+author: "Abraham Cheung"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, tidy.opts = list(width.cutoff = 90), tidy = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Summary
+
+This file assesses the correlation between the three variables in our data: penalties, trips, and deployment. We find that there is a significant and relatively strong correlation in between penalties and trips; and penalties and deployment (p < 0.001). We also find a significant and very strong correlation between trips and deployment (p < 0.001). Because of the strong correlation, we can state with more certainty in our APP report that penalties happen in areas with more trips; penalties occur in areas with more deployment; more trips happen in places that have greater deployment. We also conclude that due to the strength of the correlation, we might not want to conduct a linear regression because the possible issue of collinearity.
+
+## Set up
+
+```{r prep}
+pacman::p_load('tidyverse','readxl','sf')
+
+# file path objects
+data_files_dir <- file.path('..','output','files') 
+```
+
+## Load Data
+
+The data used for the correlation check has already been cleaned and transformed. In summary, we limited observations to March 2019 to September 2022 since that time frame intersects for all three data sets (penalty, trip, and average deployment data). The data frame shows the number of penalties, number of trips (by origin and by destination), and average deployment for each month for each Neighborhood Council.
+
+```{r data}
+getwd()
+df <- read.csv(file.path(data_files_dir,"correlation_data.csv"))
+
+glimpse(df)
+head(df)
+```
+
+## Normality Check
+
+Our data is not normally distributed, so we used Spearman's rho instead of Pearson's r.
+
+```{r normal}
+hist(df$pen_count)
+hist(df$avg_depl)
+hist(df$dest_ct)
+hist(df$origin_ct)
+```
+
+## Spearman's Rho
+
+The correlation between penalties and deployment/trips is relatively strong (rho > 0.60). The correlation between deployment and trips is very strong (rho > 0.96).
+
+```{r spearman}
+df %>% 
+  select(pen_count,avg_depl,dest_ct,origin_ct) %>% 
+  cor(method = "spearman")
+
+```
+
+## Kendall's Tau
+
+We also calculated correlation with Kendall's Tau to verify our results. The correlation between penalties and deployment/trips is also relatively strong (rho > 0.50). The correlation between deployment and trips is also very strong (rho > 0.88).
+
+```{r kendall}
+df %>% 
+  select(pen_count,avg_depl,dest_ct,origin_ct) %>% 
+  cor(method = "kendall")
+
+```
+
+## Testing Spearman's Rho 
+
+All combinations for the correlation are statistically significant (p < .001)
+
+```{r test}
+cor.test(df$pen_count, df$avg_depl, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(df$pen_count, df$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(df$pen_count, df$origin_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(df$avg_depl, df$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(df$avg_depl, df$origin_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(df$origin_ct, df$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
+
+```
+

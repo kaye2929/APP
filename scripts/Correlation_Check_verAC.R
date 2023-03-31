@@ -94,6 +94,9 @@ hist(combined$avg_depl)
 hist(combined$dest_ct)
 hist(combined$origin_ct)
 
+# Save data frame for correlation check
+# write.csv(combined, file.path(data_files_dir,"correlation_data.csv"), row.names = F)
+
 # Correlation with Spearman's rho
 corr_sp <- 
   combined %>% 
@@ -102,7 +105,7 @@ corr_sp <-
   cor(method = "spearman") %>% 
   as.data.frame()
 
-# write.csv(corr_sp, file.path(data_files_dir,"correlation_spearman.csv"))
+# write.csv(corr_sp, file.path(data_files_dir,"correlation_spearman.csv"), row.names = F)
 
 
 # Correlation with Kendall's tau
@@ -113,14 +116,14 @@ corr_kd <-
   cor(method = "kendall") %>% 
   as.data.frame()
 
-# write.csv(corr_kd, file.path(data_files_dir,"correlation_kendall.csv"))
+# write.csv(corr_kd, file.path(data_files_dir,"correlation_kendall.csv"), row.names = F)
 
 
 # All combinations show that the spearman's rho is statistical significance
-cor.test(combined$pen_count, combined$avg_depl, method = "spearman")
-cor.test(combined$pen_count, combined$dest_ct, method = "spearman")
-cor.test(combined$pen_count, combined$origin_ct, method = "spearman")
-cor.test(combined$avg_depl, combined$dest_ct, method = "spearman")
-cor.test(combined$avg_depl, combined$origin_ct, method = "spearman")
-cor.test(combined$origin_ct, combined$dest_ct, method = "spearman")
+cor.test(combined$pen_count, combined$avg_depl, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(combined$pen_count, combined$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(combined$pen_count, combined$origin_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(combined$avg_depl, combined$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(combined$avg_depl, combined$origin_ct, method = "spearman", alternative = "greater", exact = FALSE)
+cor.test(combined$origin_ct, combined$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
 
