@@ -126,9 +126,9 @@ NC_noSOZ_pop <- areal::aw_interpolate(nc_georef_noSOZ, tid = NC_ID,
 
 ## for NC with SOZs
 ## to calculate the population living within the SOZ, we need to assign NC_ID, which we will remove later on since SOZs are not NCs
-nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Venice Ocean Front Walk"] <- -99
-nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Hollywood Walk of Fame"] <- -999
-nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Downtown LA"] <- -9999
+nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Venice Ocean Front Walk"] <- 1001
+nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Hollywood Walk of Fame"] <- 1002
+nc_georef_wSOZ$NC_ID[nc_georef_wSOZ$data_nc_name %in% "Downtown LA"] <- 1003
 
 ## interpolate the population
 NC_wSOZ_pop <- areal::aw_interpolate(nc_georef_wSOZ, tid = NC_ID, 
@@ -136,11 +136,14 @@ NC_wSOZ_pop <- areal::aw_interpolate(nc_georef_wSOZ, tid = NC_ID,
                                       weight = "total", output = "sf", 
                                       extensive = c("pop_est", "pop_over18_est"))
 
+
 ## remove the fake NC_IDs
 NC_wSOZ_pop$NC_ID[NC_wSOZ_pop$NC_ID < 0] <- NA
 
 
 # Export GeoJSON ####
+# save(NC_noSOZ_pop,NC_wSOZ_pop,file=file.path(output_path,"NCZone_GeoRef.RData"))
+# 
 # st_write(NC_noSOZ_pop,
 #          file.path(output_path, 'NCZone_GeoRef_noSOZ.geojson'),
 #          delete_dsn = TRUE)

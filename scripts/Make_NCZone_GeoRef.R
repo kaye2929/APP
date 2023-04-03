@@ -129,6 +129,14 @@ nc_georef_noSOZ =
                select(Geo_Type,join_name),
              by='join_name') %>% 
   select(-join_name) %>% 
+  
+  # add an additional column to indicate if the NC is part of an SOZ
+  mutate(
+    Geo_Type_wSOZ = 
+      ifelse(
+        cert_name %in% c("VENICE NC","DOWNTOWN LOS ANGELES","HOLLYWOOD HILLS WEST NC","HOLLYWOOD UNITED NC","HOLLYWOOD STUDIO DISTRICT","CENTRAL HOLLYWOOD NC"),
+        "Special Operations Zone",
+        Geo_Type)) %>% 
   glimpse()
 
 
@@ -140,7 +148,8 @@ SOZ_df =
     data_nc_name = c("Venice Ocean Front Walk","Hollywood Walk of Fame","Downtown LA"),
     cert_name = c("Venice Ocean Front Walk","Hollywood Walk of Fame","Downtown LA"),
     SERVICE_RE = c("REGION 11 - WEST LA","REGION 5 - CENTRAL 1","REGION 6 - CENTRAL 2"),
-    SFV = c(F,F,F)) %>% 
+    SFV = c(F,F,F),
+    Geo_Type_wSOZ = "Special Operations Zone") %>% 
   inner_join(prog_geos,by=c("data_nc_name"="name")) %>% 
   mutate(area_mi2 = set_units(st_area(geometry),mi^2)) %>% 
   select(-join_name) %>% 
@@ -158,4 +167,4 @@ nc_georef_noSOZ <- st_as_sf(nc_georef_noSOZ)
 nc_georef_wSOZ <- st_as_sf(nc_georef_wSOZ)
 
 ## Save
-# save(nc_georef_noSOZ,nc_georef_wSOZ,file = file.path(output_path,"NCZone_GeoRef.RData"))
+# save(nc_georef_noSOZ,nc_georef_wSOZ,file = file.path(output_path,"NCZone_GeoRef_NoPop.RData"))
