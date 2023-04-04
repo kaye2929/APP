@@ -14,8 +14,7 @@ ref_sub <-
   select(data_nc_name, cert_name, NC_ID)
 
 # load trip counts if you have a Mac:
-trip <- read.csv(file.path(data_files_dir, "Trip_OD_by_NC.csv")) %>% 
-  select(-X)
+# trip <- read.csv(file.path(data_files_dir, "Trip_OD_by_NC.csv")) %>% select(-X)
 
 # load trip counts if you have Microsoft:
 trip <- read.csv(file.path(data_files_dir, "Trip_OD_by_NC.csv")) 
@@ -40,14 +39,14 @@ for (yr in years) {
     # rename the truncated labels (we obtained the full names from LADOT) ###############
   mutate(
     `Violation/Infraction/Issue` = case_when(
-      `Violation/Infraction/Issue` %in% "Vehicle improperly parked (lay" ~ "Vehicle improperly parked (lay",
-      `Violation/Infraction/Issue` %in% "Unpermitted Company and/or veh" ~ "Unpermitted Company and/or veh",
+      `Violation/Infraction/Issue` %in% "Vehicle improperly parked (lay" ~ "Vehicle improperly parked (laying down)",
+      `Violation/Infraction/Issue` %in% "Unpermitted Company and/or veh" ~ "Unpermitted Company and/or vehicle",
       `Violation/Infraction/Issue` %in% "Parked on Private Property" ~ "Parked on Private Property",
       `Violation/Infraction/Issue` %in% "Damaged or unsanitary Vehicle" ~ "Damaged or unsanitary Vehicle",
       `Violation/Infraction/Issue` %in% "Low Battery" ~ "Low Battery",
       `Violation/Infraction/Issue` %in% "Other" ~ "Other",
       `Violation/Infraction/Issue` %in% "Sidewalk Riding" ~ "Sidewalk Riding",
-      `Violation/Infraction/Issue` %in% "Vehicle listed as available, b" ~ "Vehicle listed as available, b",
+      `Violation/Infraction/Issue` %in% "Vehicle listed as available, b" ~ "Vehicle listed as available, but not available",
       TRUE ~ `Violation/Infraction/Issue`
     )
   ) %>% 

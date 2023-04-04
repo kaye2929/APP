@@ -78,72 +78,52 @@ June_depl %>%
 # grouping: SFV or not
 # plot: connected dots of averages for SFV and for not SFV
 
-# all inputs
-# yr_regex, depl_joined (same), loop_obj (area etc, but may not need it), label for year
-df_yrs = 
-  data.frame(
-    yr_label = c("Pilot Program","Current Program"),
-    yr_regex = c("2019-0[4-9]|2019-1[0-2]|2020-0[1-3]","2020-0[4-9]|2020-1\\d|2021|2022")
+  
+# 1. only keep deployment for the months in the specific years (Pilot Program)
+yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
+depl_ppyr =
+  depl_joined %>% 
+  filter(grepl(yr_regex,month_yr)) %>% 
+  mutate(days_mo = days_in_month(month_yr))
+  
+# 2. calculate average for SFV and non SFV
+depl_ppyr_sum =
+  depl_ppyr %>% 
+  group_by(SFV) %>% 
+  summarise(avg_SFV_depl = weighted.mean(avg_depl, days_mo, na.rm=TRUE))
+
+# 3. plot deployment by SFV and not
+depl_plot = 
+  depl_ppyr %>% 
+  group_by(SFV,month_yr) %>% 
+  summarise(avg = mean(avg_depl, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month_yr),y=avg,group=SFV)) + 
+  geom_point(aes(shape=SFV)) +
+  geom_line(aes(color=SFV)) +
+  geom_hline(yintercept = c(depl_ppyr_sum$avg_SFV_depl[1],depl_ppyr_sum$avg_SFV_depl[2]), linetype='dashed', color=c('red','blue')) +
+  scale_shape(solid = FALSE) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  ylab("Average Deployment\n") +
+  labs(
+    title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
+    subtitle = str_c("Deployment is reported as average monthly deployment")
+  ) + 
+  theme_classic()
+
+ggsave(plot = depl_plot,filename = file.path(plots_dir,"Deployment_SFV_Pilot.png"), width = 6,height = 5)
+
+
+# 4. plot log transformed y-axis
+depl_plot_log = 
+  depl_plot +
+  scale_y_continuous("Average Deployment\n",trans = scales::log_trans(),labels = label_number(accuracy = .01)) +
+  labs(
+    title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
+    subtitle = str_c("Deployment is reported as logged average monthly deployment")
   )
+  
+ggsave(plot = depl_plot_log,filename = file.path(plots_dir,"Deployment_SFV_Pilot_Logged.png"), width = 6,height = 5)
 
-plot_all_depl <- function(df = depl_joined, period = c("pilot","current"), denom = c("","area_mi2","pop1000_est","pop1000_over18_est")
-) {
-  
-  # save year labels and regex as objects
-  yr_label = df_yrs %>% 
-    filter(grepl(period,yr_label,ignore.case = TRUE)) %>% 
-    select(yr_label) %>% 
-    unlist()
-  
-  yr_regex = df_yrs %>% 
-    filter(grepl(period,yr_label,ignore.case = TRUE)) %>% 
-    select(yr_regex) %>% 
-    unlist()
-  
-  return(writeLines(str_c(yr_label,"\n",yr_regex)))
-  
-  # 1. only keep deployment for the months in the specific years
-  df =
-    df %>% 
-    filter(grepl(yr_regex,month_yr)) %>% 
-    mutate(days_mo = days_in_month(month_yr))
-  
-  # 2. calculate average for SFV and non SFV
-  df_sum =
-    df %>% 
-    group_by(SFV) %>% 
-    summarise(avg_SFV_depl = weighted.mean(avg_depl, days_mo, na.rm=TRUE))
-
-  # 3. plot deployment by SFV and not
-  depl_plot = 
-    df %>% 
-    group_by(SFV,month_yr) %>% 
-    summarise(avg = mean(avg_depl, na.rm=TRUE)) %>% 
-    ggplot(aes(x=as.character(month_yr),y=avg,group=SFV)) + 
-    geom_point(aes(shape=SFV)) +
-    geom_line(aes(color=SFV)) +
-    geom_hline(yintercept = c(df_sum$avg_SFV_depl[1],df_sum$avg_SFV_depl[2]), linetype='dashed', color=c('red','blue')) +
-    scale_shape(solid = FALSE) +
-    scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
-    ylab("Average Deployment\n") +
-    labs(
-      title = str_c("SFV and Non-SFV Deployment (",yr_label,")"),
-      subtitle = str_c("Deployment is reported as average monthly deployment ",denom) # INPUT
-    ) + 
-    theme_classic()
-  
-  
-  # 4. plot log transformed y-axis
-  
-}
-
-plot_all_depl(period = "pilot", denom = "")
-
-
-
-# create a second plot with logged scales
-
-ggsave(plot = plot2b,filename = file.path(plots_dir,str_c("depl_",".png"), width = 6,height = 5)) # INPUT
 
 
 # Plot 3: Plotting Deploying Function ###########
@@ -185,33 +165,16 @@ plot_depl <- function(df = depl_ppyr, denom, loop_obj = i) {
     ) +
     theme_classic()
 
-  # making plot for depl_p_log
-  # make summary table for average across the whole period
-  depl_p_log_sum =
-    df %>%
-    group_by(SFV) %>%
-    summarise(avg_SFV_depl = weighted.mean(depl_p_log, days_mo, na.rm = TRUE))
-
-  # make a plot with depl_p_log
+  # making plot with log transformed axes to show more variation in the lower count values
   depl_p_log_plot =
-    df %>%
-    group_by(SFV,month_yr) %>%
-    summarise(avg = mean(depl_p_log, na.rm=TRUE)) %>% 
-    ggplot(aes(x=as.character(month_yr),y=avg,group=SFV)) +
-    geom_point(aes(shape=SFV)) +
-    geom_line(aes(color=SFV)) +
-    geom_hline(yintercept = c(depl_p_log_sum$avg_SFV_depl[1],depl_p_log_sum$avg_SFV_depl[2]), linetype='dashed', color=c('red','blue')) +
-    scale_shape(solid = FALSE) +
-    scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
-    scale_y_continuous(str_c("Deployment per log(", loop_obj, ")"), trans = scales::log_trans(), labels = label_number(accuracy = .01, big.mark = ",")) +
+    depl_per_plot +
+    scale_y_continuous(str_c("Deployment per log(", loop_obj, ")"), trans = scales::log_trans(), labels = label_number(accuracy = .01)) +
     labs(
-      title = str_c("SFV and Non-SFV Deployment during ","Pilot Program"),
-      subtitle = str_c("Average deployment is calculated per log(",loop_obj,")")
-    ) +
-    theme_classic()
-
+      title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
+      subtitle = str_c("Deployment is reported as logged average monthly deployment per ",loop_obj))
+      
   # return objects as list
-  return(list(df,depl_per_sum,depl_p_log_sum,depl_per_plot,depl_p_log_plot))
+  return(list(df,depl_per_sum,depl_per_plot,depl_p_log_plot))
 
 }
 
@@ -225,162 +188,121 @@ for (i in words) {
   # assign unique objects 
   assign(str_c("depl_per_",i,"_df"),res[[1]])
   assign(str_c("depl_per_",i,"_sum"),res[[2]])
-  assign(str_c("depl_per_",i,"_log_sum"),res[[3]])
-  assign(str_c("depl_per_",i,"_plot"),res[[4]])
-  assign(str_c("depl_per_",i,"_log_plot"),res[[5]])
+  assign(str_c("depl_per_",i,"_plot"),res[[3]])
+  assign(str_c("depl_per_",i,"_log_plot"),res[[4]])
   
   # save plots
-  ggsave(file.path(plots_dir,str_c("depl_per_",i,"_pilot.png")),plot = res[[4]],width = 6,height = 5)
-  ggsave(file.path(plots_dir,str_c("depl_per_",i,"_log_pilot.png")),plot = res[[5]],width = 6,height = 5)
+  ggsave(file.path(plots_dir,str_c("depl_per_",i,"_pilot.png")),plot = res[[3]],width = 6,height = 5)
+  ggsave(file.path(plots_dir,str_c("depl_per_",i,"_log_pilot.png")),plot = res[[4]],width = 6,height = 5)
   }
 
-# Adjust the axis for several plots and re-save
-depl_per_area_mi2_log_plot =
-  depl_per_area_mi2_log_plot +
-  ylim(-1,4) +
-  ylab("Average deployment")
-ggsave(file.path(plots_dir,"depl_per_area_mi2_log_pilot.png") ,depl_per_area_mi2_log_plot,width = 6,height = 5)
 
-depl_per_pop1000_est_log_plot =
-  depl_per_pop1000_est_log_plot +
-  ylim(-3,2) +
-  ylab("Average deployment")
-ggsave(file.path(plots_dir,"depl_per_pop1000_est_log_pilot.png") ,depl_per_pop1000_est_log_plot,width = 6,height = 5)
 
-depl_per_pop1000_over18_est_log_plot =
-  depl_per_pop1000_over18_est_log_plot +
-  ylim(-3,2) +
-  ylab("Average deployment")
-ggsave(file.path(plots_dir,"depl_per_pop1000_over18_est_log_pilot.png") ,depl_per_pop1000_over18_est_log_plot,width = 6,height = 5)
 
-## normality of DV ####
-## cannot find average across subdivided space. we can find averages per month, but we cant find the average within a month by a geo
-  
-depl_ppyr %>% 
-  ggplot(aes(x=as.character(Month),y=avg_depl,group=SFV)) +
-  geom_point(aes(shape=SFV)) +
-  scale_shape(solid = FALSE) +
-  geom_smooth(method="lm",aes(linetype=SFV)) +
-  scale_x_discrete("Month",guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Average Deployment \n (Natural Log)", trans = scales::log_trans(), labels = label_number(accuracy = .01, big.mark = ",")) +
-  scale_colour_hue(labels = c("Non-SFV NC", "SFV NC")) +  
-  ggtitle("Deployment by Neighborhood Council during Pilot Program") +
-  theme_classic()
 
 
 # Next Steps ############
-# add the non-per capita etc part to deployment function
-# edit so that you can change the labels of the year
-# edit so that you can change the grepl() pattern input for years of interest
 
-# check w group if ok to not do per capita, per mi2 since all same
-# log might not be good way to analyze bc if 0, then it is dropped, any average of logged numbers is then an overstatement of the real change
-# but you can log the final average to see more of the variation
-depl_per_pop1000_est_df %>% 
-  filter(!is.na(depl_p_log)) %>% 
-  group_by(SFV,month_yr) %>% 
-  count() %>% 
-  print(n=nrow(.))
-# then the 2nd graph shud only be LOGGED scale transform (just the scale, not the values)
 
-## distribution of DV
-# no transf, very skewed
-depl_ppyr %>% 
-  ggplot(aes(x=avg_depl)) +
-  geom_histogram(aes(y = after_stat(density))) +
-  stat_function(fun = dnorm, 
-                args = list(mean = mean(depl_ppyr$avg_depl),
-                            sd = sd(depl_ppyr$avg_depl)))
-
-# natural log transf, better, but there are lots of obs with HIGH depl
-ggplot(data=depl_ppyr, aes(x=log(avg_depl))) +
-  geom_histogram(aes(y = after_stat(density))) +
-  stat_function(fun = dnorm, 
-                args = list(
-                  mean = mean(log(depl_ppyr$avg_depl[which(depl_ppyr$avg_depl!=0)])),
-                  sd = sd(log(depl_ppyr$avg_depl[which(depl_ppyr$avg_depl!=0)]))))
-
-chk_norm <- function(df = depl_ppyr, denom, plot_phrase = plot_title) {
-  
-  df = 
-    df %>% 
-    filter(avg_depl != 0) %>% 
-    mutate(
-      depl_per = avg_depl/{{denom}},
-      depl_per_log = log(depl_per)) %>% 
-    glimpse()
-  
-  # show the skewed distribution, not logged
-  print(
-    ggplot(data = df,
-           aes(x=depl_per)) +
-      geom_histogram(aes(y = after_stat(density))) +
-      stat_function(fun = dnorm,
-                    args = list(
-                      mean = mean(df$depl_per),
-                      sd = sd(df$depl_per)))
-    + ggtitle(str_c("Histogram of Avg Depl Divided by ",paste(plot_phrase)))
-  )
-  
-  print(
-    ggplot(data = df, 
-           aes(x=depl_per_log)) +
-      geom_histogram(aes(y = after_stat(density))) +
-      stat_function(fun = dnorm,
-                    args = list(
-                      mean = mean(df$depl_per_log),
-                      sd = sd(df$depl_per_log)))
-    + ggtitle(str_c("Histogram of Log Avg Depl Divided by ",paste(plot_phrase)))
-    )
-}
-
-# loop through colnames
-words <- c("area_mi2","pop_est","pop_over18_est")
-for (i in words) {
-  writeLines(str_c("\nChecking normality of ",i, " variable."))
-  plot_title = str_c(i)
-  chk_norm(denom = get(i))
-}
-# once the per_ something values are logged, the distribution is more normal, but not really
-# we can run some tests to check for normality
 
 
 
 # Plot 3: ####
-depl_allyr =
-  depl_joined %>% 
-  # select(-matches("202[12]"),-c(April_2020:December_2020)) %>% 
-  pivot_longer(cols = c(January_2022:December_2019),
-               names_to = "Month",
-               values_to = "avg_depl") %>% 
-  mutate(Month = floor_date(mdy(Month),unit = "month")) %>% 
-  arrange(nc_id,Month)
 
-## plotting with linear model
-plot3 =
-  depl_allyr %>% 
-  ggplot(aes(x=as.character(Month),y=avg_depl,group=Geo_Type)) +
-  # geom_point(aes(shape=Geo_Type)) +
-  # scale_shape(solid = FALSE) +
-  geom_smooth(method="lm",aes(linetype=Geo_Type)) +
-  scale_x_discrete("Month",guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Average Deployment \n (Natural Log)", trans = scales::log_trans(), labels = label_number(accuracy = .01, big.mark = ",")) +
-  scale_colour_hue(labels = c("Non-SFV NC", "SFV NC")) +  
-  ggtitle("Deployment by Neighborhood Council during Pilot Program") +
-  theme_classic()
 
 
 
 # Plot 4: ####
 
 
+## Normality check for: ######
+# sq mi2, per capita, and per capita >18
+# conclusion: the distribution of NC areas is right skewed, but the population distribution of NCs are about normally distributed. There are 2 outliers for having significantly larger areas. And only 1 outlier for having significantly larger population. The zones types are about equally distributed in all NC areas and population sizes. As a result, we do not determine there to be significant changes in the trip, deployment, and penalty counts when divided by area or population. Additionally, our unit of analysis is at the San Fernando Valley (or non SFV) level and the 4 program geography types. Aggregating to such a high level of geography eliminates differences in the areas and population.
+
+## square miles
+# plot
+nrm_chk_mi2 =
+  nc_georef_noSOZ %>% 
+  ggplot(aes(area_mi2, fill=Geo_Type_wSOZ)) +
+  geom_histogram(binwidth = 1, color="white") +
+  scale_x_continuous(name = "Square Miles") +
+  ylab("Count of Neighborhood Councils") +
+  labs(title = "Distribution of Neighborhood Council Area") +
+  theme_classic()
+ggsave(filename = file.path(plots_dir,"Normality_Check_SqMi.png"),plot = nrm_chk_mi2,width = 6,height = 5)
+
+# outliers where z >= 3 or z <= -3
+nc_georef_noSOZ %>% 
+  as.data.frame() %>% 
+  mutate(
+    zscore = (area_mi2 - mean(area_mi2))/sd(area_mi2)
+  ) %>% 
+  select(cert_name,area_mi2,zscore) %>% 
+  filter(zscore >=3 | zscore <= -3) %>% 
+  arrange(zscore) 
+# only 3 neighborhood councils with significantly larger geographies than average
+#   cert_name                   area_mi2   zscore
+# 1    BEL AIR-BEVERLY CREST NC 17.04331 3.096032
+# 2 FOOTHILL TRAILS DISTRICT NC 19.60131 3.735471
+
+
+## per capita
+# plot
+nrm_chk_pop =
+  nc_georef_noSOZ %>% 
+  ggplot(aes(pop_est, fill=Geo_Type_wSOZ)) +
+  geom_histogram(binwidth = 10000, color="white") +
+  scale_x_continuous(name = "Population") +
+  ylab("Count of Neighborhood Councils") +
+  labs(title = "Distribution of Neighborhood Councils by Population") +
+  theme_classic()
+ggsave(filename = file.path(plots_dir,"Normality_Check_Pop.png"),plot = nrm_chk_pop,width = 6,height = 5)
+
+# outliers 
+nc_georef_noSOZ %>% 
+  as.data.frame() %>% 
+  mutate(
+    zscore = (pop_est - mean(pop_est))/sd(pop_est)
+  ) %>% 
+  select(cert_name,pop_est,zscore) %>% 
+  filter(zscore >=3 | zscore <= -3) %>% 
+  arrange(zscore) 
+# only one NC with significantly larger population
+#   cert_name                      pop_est    zscore
+# 1 WILSHIRE CENTER - KOREATOWN NC 96431.34 3.061989
+
+
+## per capita over 18
+# plot
+nrm_chk_pop18 =
+  nc_georef_noSOZ %>% 
+  ggplot(aes(pop_over18_est,fill=Geo_Type_wSOZ)) +
+  geom_histogram(binwidth = 10000, color="white") +
+  scale_x_continuous(name = "Population") +
+  ylab("Count of Neighborhood Councils") +
+  labs(title = "Distribution of Neighborhood Councils by Population") +
+  theme_classic()
+ggsave(filename = file.path(plots_dir,"Normality_Check_Pop18.png"),plot = nrm_chk_pop18,width = 6,height = 5)
+
+# outliers
+nc_georef_noSOZ %>% 
+  as.data.frame() %>% 
+  mutate(
+    zscore = (pop_over18_est - mean(pop_over18_est))/sd(pop_over18_est)
+  ) %>% 
+  select(cert_name,pop_over18_est,zscore) %>% 
+  filter(zscore >=3 | zscore <= -3) %>% 
+  arrange(zscore) 
+# only one NC with significantly larger population over 18
+#   cert_name                      pop_over18_est  zscore
+# 1 WILSHIRE CENTER - KOREATOWN NC        78015.4 3.25778
 
 
 # Storage: ####
 ## plotting with linear model
 # plot2 =
 #   depl_ppyr %>% 
-#   ggplot(aes(x=as.character(Month),y=avg_depl,group=SFV)) +
+#   ggplot(aes(x=as.character(month_yr),y=avg_depl,group=SFV)) +
 #   geom_point(aes(shape=SFV)) +
 #   scale_shape(solid = FALSE) +
 #   geom_smooth(method="lm",aes(linetype=SFV)) +
