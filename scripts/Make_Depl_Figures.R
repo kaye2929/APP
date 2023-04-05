@@ -1,6 +1,6 @@
 ##### Make Deployment Figures #######################
 # Author: Abraham Cheung
-# Purpose of script: make charts and graphs for data using trip counts
+# Purpose of script: make charts and graphs for data using deployment averages 
 
 # Set Up ####
 # libraries
@@ -26,53 +26,18 @@ depl_joined <-
               select(NC_ID,SFV:pop_over18_est),
             by="NC_ID") %>% 
   mutate(pop1000_est = pop_est/1000,
-         pop1000_over18_est = pop_over18_est/1000)
+         pop1000_over18_est = pop_over18_est/1000,
+         Geo_Type_wSOZ = recode(Geo_Type_wSOZ,
+           "Standard Permitted District" = "SPD",
+           "Equity-Focus Mobility Development District" = "EFMDD",
+           "Mobility Development District" = "MDD",
+           "Special Operations Zone" = "SOZ"
+         ))
 
-# Plot 1: Working Plot ####
-June_depl = deploy_df %>% 
-  select(new_nc_name,nc_id,June_2019) %>% 
-  inner_join(nc_georef_noSOZ %>% 
-               as.data.frame() %>% 
-               select(NC_ID,SERVICE_RE,SFV,area_mi2,Geo_Type,pop_est,pop_over18_est),
-             by=c("nc_id"="NC_ID")) %>% 
-  mutate(June_2019_tot = June_2019*30) %>% 
-  as.data.frame()  
+# Color Info ####
+# four colors: dodgerblue3 - EFMDD or non-SFV, tomato2 - MDD or SFV, olivedrab3  - SPD, plum3 - SOZ
 
-city_area = sum(nc_georef_noSOZ$area_mi2)
-
-June_depl %>% 
-  summarise(avg_avg = mean(June_2019, na.rm=TRUE), # average of average deployment, WRONG
-            tot_depl = sum(June_2019_tot), # total depl after finding total count each month
-            avg_depl_city = tot_depl/length(June_2019_tot), # avg depl per NC
-            tot_mi2 = sum(area_mi2), # total sq mi in city
-            avg_tot_mi2 = tot_depl/tot_mi2, # 
-            avg_tot_wt_mi2 = sum(June_2019*area_mi2)/tot_mi2, # avg daily depl wt by mi2
-            avg_tot_wt_day_mi2 = sum(June_2019_tot*area_mi2)/tot_mi2) %>% # avg monthly depl wt by mi, can transf to prev one by dividing by # days in month. This is lower than `avg_depl_city`
-  glimpse()
-
-
-ggplot(data = nc_georef_noSOZ,aes(x=area_mi2))+
-  geom_histogram()+
-  geom_vline(aes(xintercept = median(area_mi2))) # 3.29 mi2
-
-
-# avg depl per sq mi
-June_depl %>% 
-  mutate(AvgDepl_mi2 = June_2019/area_mi2) %>% 
-  summarise(avg_avg = mean(AvgDepl_mi2), # wrong
-            AvgDepl_wt_mi2 = sum(AvgDepl_mi2*area_mi2)/city_area # avg depl per mi2 wt by NC mi2
-            ) %>% 
-  glimpse()
-
-# as area increases, the average deployment decreases
-June_depl %>% 
-  mutate(AvgDepl_mi2 = June_2019/area_mi2) %>% 
-  ggplot(aes(x=area_mi2,y=AvgDepl_mi2)) +
-  geom_point(aes(color=SFV))+
-  geom_smooth(method = "lm",se=FALSE,color="black")
-
-
-# Plot 2: Average Deployment over time, by SFV ####
+# Plots 1: Avg Depl in Pilot Program, by SFV ####
 # x: months Apr 2019 - Mar 2020
 # y: average deployment; make additional charts with avg depl per capita and per mi2
 # grouping: SFV or not
@@ -84,7 +49,7 @@ yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
 depl_ppyr =
   depl_joined %>% 
   filter(grepl(yr_regex,month_yr)) %>% 
-  mutate(days_mo = days_in_month(month_yr))
+  mutate(days_mo = lubridate::days_in_month(month_yr))
   
 # 2. calculate average for SFV and non SFV
 depl_ppyr_sum =
@@ -93,23 +58,24 @@ depl_ppyr_sum =
   summarise(avg_SFV_depl = weighted.mean(avg_depl, days_mo, na.rm=TRUE))
 
 # 3. plot deployment by SFV and not
-depl_plot = 
+depl_plot =
   depl_ppyr %>% 
   group_by(SFV,month_yr) %>% 
   summarise(avg = mean(avg_depl, na.rm=TRUE)) %>% 
-  ggplot(aes(x=as.character(month_yr),y=avg,group=SFV)) + 
-  geom_point(aes(shape=SFV)) +
-  geom_line(aes(color=SFV)) +
-  geom_hline(yintercept = c(depl_ppyr_sum$avg_SFV_depl[1],depl_ppyr_sum$avg_SFV_depl[2]), linetype='dashed', color=c('red','blue')) +
-  scale_shape(solid = FALSE) +
+  ggplot(aes(x=as.character(month_yr),y=avg,color=SFV)) +
+  geom_line(aes(group=SFV)) +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  geom_hline(yintercept = c(depl_ppyr_sum$avg_SFV_depl[1],depl_ppyr_sum$avg_SFV_depl[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   ylab("Average Deployment\n") +
   labs(
-    title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
-    subtitle = str_c("Deployment is reported as average monthly deployment")
+    title = str_c("Figure X: ","SFV and Non-SFV Deployment (","Pilot Program",")"),
+    subtitle = str_c("Deployment is reported as average monthly deployment"),
+    caption = "Source: LADOT CPRA Data"
   ) + 
   theme_classic()
-
+  
 ggsave(plot = depl_plot,filename = file.path(plots_dir,"Deployment_SFV_Pilot.png"), width = 6,height = 5)
 
 
@@ -118,7 +84,7 @@ depl_plot_log =
   depl_plot +
   scale_y_continuous("Average Deployment\n",trans = scales::log_trans(),labels = label_number(accuracy = .01)) +
   labs(
-    title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
+    title = str_c("Figure X: ","SFV and Non-SFV Deployment (","Pilot Program",")"),
     subtitle = str_c("Deployment is reported as logged average monthly deployment")
   )
   
@@ -126,8 +92,9 @@ ggsave(plot = depl_plot_log,filename = file.path(plots_dir,"Deployment_SFV_Pilot
 
 
 
-# Plot 3: Plotting Deploying Function ###########
+# Plots 2: Plotting Deploying Function ###########
 # average deployment by area, per capita, and per capita over 18
+# however, since these plots are very similar to the avg deployment (untransformed), we will not be plotting these variables anymore
 plot_depl <- function(df = depl_ppyr, denom, loop_obj = i) {
 
   # make dataframe for the average deployment per mi2, capita, capita >=18
@@ -151,17 +118,18 @@ plot_depl <- function(df = depl_ppyr, denom, loop_obj = i) {
   depl_per_plot =
     df %>%
     group_by(SFV, month_yr) %>%
-    summarise(avg = mean(depl_per)) %>%
-    ggplot(aes(x=as.character(month_yr),y=avg,group=SFV)) +
-    geom_point(aes(shape=SFV)) +
-    geom_line(aes(color=SFV)) +
-    geom_hline(yintercept = c(depl_per_sum$avg_SFV_depl[1],depl_per_sum$avg_SFV_depl[2]), linetype='dashed', color=c('red','blue')) +
-    scale_shape(solid = FALSE) +
+    summarise(avg = mean(depl_per, na.rm=TRUE)) %>%
+    ggplot(aes(x=as.character(month_yr),y=avg,color=SFV)) +
+    geom_point() +
+    geom_line(aes(group=SFV)) +
+    scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+    geom_hline(yintercept = c(depl_per_sum$avg_SFV_depl[1],depl_per_sum$avg_SFV_depl[2]), linetype='dashed', color=c("dodgerblue3", "tomato2")) +
     scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
     ylab(str_c("Deployment per ", loop_obj)) +
     labs(
-      title = str_c("SFV and Non-SFV Deployment during ","Pilot Program"),
-      subtitle = str_c("Average deployment is calculated per ",loop_obj)
+      title = str_c("Figure X: ","SFV and Non-SFV Deployment during ","Pilot Program"),
+      subtitle = str_c("Average deployment is calculated per ",loop_obj),
+      caption = "Source: LADOT CPRA Data"
     ) +
     theme_classic()
 
@@ -170,7 +138,7 @@ plot_depl <- function(df = depl_ppyr, denom, loop_obj = i) {
     depl_per_plot +
     scale_y_continuous(str_c("Deployment per log(", loop_obj, ")"), trans = scales::log_trans(), labels = label_number(accuracy = .01)) +
     labs(
-      title = str_c("SFV and Non-SFV Deployment (","Pilot Program",")"),
+      title = str_c("Figure X: ","SFV and Non-SFV Deployment (","Pilot Program",")"),
       subtitle = str_c("Deployment is reported as logged average monthly deployment per ",loop_obj))
       
   # return objects as list
@@ -198,16 +166,63 @@ for (i in words) {
 
 
 
+# Plots 3: Avg Depl Current Program ####
+# 1. only keep deployment for the months in the specific years of the "current" program (Apr 2020 to Sept 2022)
+yr_regex = "2020-0[4-9]|2020-1[0-2]|202[1-2]"
+depl_curr =
+  depl_joined %>% 
+  filter(grepl(yr_regex,month_yr)) %>% 
+  mutate(days_mo = lubridate::days_in_month(month_yr))
+
+# 2. calculate average for SFV and non SFV
+depl_curr_sum =
+  depl_curr %>% 
+  group_by(Geo_Type_wSOZ) %>% 
+  summarise(avg_depl = weighted.mean(avg_depl, days_mo, na.rm=TRUE))
 
 
+# four colors: dodgerblue3 - EFMDD or non-SFV, tomato2 - MDD or SFV, olivedrab3  - SPD, plum3 - SOZ
 
-# Next Steps ############
+# 3. plot deployment by SFV and not
+depl_curr_plot =
+  depl_curr %>% 
+  group_by(Geo_Type_wSOZ,month_yr) %>% 
+  summarise(avg = mean(avg_depl, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month_yr),y=avg,color=Geo_Type_wSOZ)) +
+  geom_line(aes(group=Geo_Type_wSOZ)) +
+  geom_point() +
+  scale_color_manual(
+    values = c(
+      "SOZ"="plum3",
+      "MDD"="tomato2",
+      "EFMDD"="dodgerblue3",
+      "SPD"="olivedrab3"
+      ),
+    breaks = c("SOZ","MDD","EFMDD","SPD")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  ylab("Average Deployment\n") +
+  labs(
+    title = str_c("Figure X: ","Deployment by Geography Types (","Current Program",")"),
+    subtitle = str_c("Deployment is reported as average monthly deployment"),
+    color = "Program Geographies",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = depl_curr_plot,filename = file.path(plots_dir,"Deployment_Current.png"), width = 8,height = 5)
 
 
+# 4. plot log transformed y-axis
+depl_curr_plot_log = 
+  depl_curr_plot +
+  scale_y_continuous("Average Deployment\n",trans = scales::log_trans(),labels = label_number(accuracy = .01)) +
+  labs(
+    title = str_c("Figure X: ","Deployment by Geography Types (","Current Program",")"),
+    subtitle = str_c("Deployment is reported as logged average monthly deployment")
+  )
 
+ggsave(plot = depl_curr_plot_log,filename = file.path(plots_dir,"Deployment_Current_Logged.png"), width = 8,height = 5)
 
-
-# Plot 3: ####
 
 
 
