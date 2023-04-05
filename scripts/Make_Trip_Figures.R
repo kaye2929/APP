@@ -16,9 +16,9 @@ deploy_df <- read_csv(file.path(data_files_dir,"veh_depl_long.csv"))
 
 # load georeference files
 nc_georef_noSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_noSOZ.geojson"))
-nc_georef_wSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_wSOZ.geojson"))
 
 
+# Clean Trip Data ############
 # Prep trip data - we are only using origin counts since origin and destination are very similar.
 tr_org =
   trip_df %>% 
@@ -30,12 +30,13 @@ tr_org =
             by=c("origin_nc_id"="NC_ID")) %>% 
   mutate(pop1000_est = pop_est/1000,
          pop1000_over18_est = pop_over18_est/1000,
-         Geo_Type_wSOZ = recode(Geo_Type_wSOZ,
-                                "Standard Permitted District" = "SPD",
-                                "Equity-Focus Mobility Development District" = "EFMDD",
-                                "Mobility Development District" = "MDD",
-                                "Special Operations Zone" = "SOZ"
-         )) %>% 
+         Geo_Type_wSOZ = 
+           recode(
+             Geo_Type_wSOZ,
+             "Standard Permitted District" = "SPD",
+             "Equity-Focus Mobility Development District" = "EFMDD",
+             "Mobility Development District" = "MDD",
+             "Special Operations Zone" = "SOZ")) %>% 
   glimpse()
 
 # tr_des =
@@ -113,7 +114,12 @@ tr_org =
 
 # Plots 2: PPYR Trips Averaged ##############
 # 1. reuse df from previous section. kept trips for the months in the specific years (Pilot Program). 
-glimpse(tr_org_ppyr)
+yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
+tr_org_ppyr =
+  tr_org %>%
+  filter(grepl(yr_regex,month)) %>%
+  mutate(days_mo = lubridate::days_in_month(month))
+
 
 # 2. calculate average trips for SFV and non SFV
 tr_org_ppyr_avg =
@@ -121,7 +127,7 @@ tr_org_ppyr_avg =
   group_by(SFV) %>% 
   summarise(avg_tr = weighted.mean(trips, days_mo, na.rm=TRUE))
 
-# 3. plot deployment by SFV and not
+# 3. plot trips by SFV and not
 tr_org_ppyr_avg_plot =
   tr_org_ppyr %>% 
   group_by(SFV,month) %>% 
@@ -165,8 +171,6 @@ tr_curr =
   mutate(days_mo = lubridate::days_in_month(month))
 
 
-# four colors: dodgerblue3 - EFMDD or non-SFV, tomato2 - MDD or SFV, olivedrab3  - SPD, plum3 - SOZ
-
 # 2. plot deployment by 4 geo types
 tr_curr_plot =
   tr_curr %>% 
@@ -184,7 +188,7 @@ tr_curr_plot =
     ),
     breaks = c("SOZ","MDD","EFMDD","SPD")) +
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
-  ylab("Average Trips\n") +
+  scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
     title = str_c("Figure X: ","Trips by Geography Types (Current Program",")"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
@@ -207,3 +211,33 @@ Nov21=tr_org %>%
   filter(grepl("2021-11-01",month)) %>% 
   select(origin_new_nc_name,trips) %>% 
   glimpse()
+
+
+# Plot 4: Trips across all months ###########
+# for appendix, no filtering by Program or years
+tr_all_plot =
+  tr_org %>% 
+  group_by(Geo_Type_wSOZ,month) %>% 
+  summarise(avg = mean(trips, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month),y=avg,color=Geo_Type_wSOZ)) +
+  geom_line(aes(group=Geo_Type_wSOZ)) +
+  geom_point() +
+  scale_color_manual(
+    values = c(
+      "SOZ"="plum3",
+      "MDD"="tomato2",
+      "EFMDD"="dodgerblue3",
+      "SPD"="olivedrab3"
+    ),
+    breaks = c("SOZ","MDD","EFMDD","SPD")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Appendix Figure X: Trips by Geography Types (2019-2022)"),
+    subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
+    color = "Program Geographies",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = tr_all_plot,filename = file.path(plots_dir,"Trips_AllYrs.png"), width = 10,height = 6)
