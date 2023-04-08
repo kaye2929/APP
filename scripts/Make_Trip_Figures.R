@@ -241,3 +241,26 @@ tr_all_plot =
   theme_classic()
 
 ggsave(plot = tr_all_plot,filename = file.path(plots_dir,"Trips_AllYrs.png"), width = 10,height = 6)
+
+# Plot 5: Trips across all months by SFV ###########
+# for appendix, no filtering by Program or years
+# for penalties analysis
+tr_allSFV_plot =
+  tr_org %>% 
+  group_by(SFV,month) %>% 
+  summarise(avg = mean(trips, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month),y=avg,color=SFV)) +
+  geom_line(aes(group=SFV)) +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Appendix Figure X: Trips by SFV (2019-2022)"),
+    subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
+    color = "SFV",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = tr_allSFV_plot,filename = file.path(plots_dir,"Trips_AllYrs_SFV.png"), width = 10,height = 6)

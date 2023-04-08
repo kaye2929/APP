@@ -63,7 +63,7 @@ depl_plot =
   geom_line(aes(group=SFV)) +
   geom_point() +
   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
-  geom_hline(yintercept = c(depl_ppyr_sum$avg_SFV_depl[1],depl_ppyr_sum$avg_SFV_depl[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
+  # geom_hline(yintercept = c(depl_ppyr_sum$avg_SFV_depl[1],depl_ppyr_sum$avg_SFV_depl[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
@@ -211,7 +211,7 @@ depl_curr_plot =
 ggsave(plot = depl_curr_plot,filename = file.path(plots_dir,"Deployment_Current.png"), width = 8,height = 5)
 
 
-# Plot 4: Depl across all months ###########
+# Plot 4: Depl across all months by 4 prog geos###########
 # for appendix, no filtering by program or all years
 depl_all_plot =
   depl_joined %>% 
@@ -240,6 +240,28 @@ depl_all_plot =
 
 ggsave(plot = depl_all_plot,filename = file.path(plots_dir,"Deployment_AllYrs.png"), width = 10,height = 6)
 
+
+# Plot 5: Depl across all months by SFV ###########
+# for appendix and penalty analysis, no filtering by program or all years
+depl_allSFV_plot =
+  depl_joined %>% 
+  group_by(SFV,month_yr) %>% 
+  summarise(avg = mean(avg_depl, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month_yr),y=avg,color=SFV)) +
+  geom_line(aes(group=SFV)) +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
+  labs(
+    title = "Appendix Figure X: Deployment All Months (2019-2022) by SFV",
+    subtitle = "Deployment is reported as average monthly deployment",
+    color = "SFV",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = depl_allSFV_plot,filename = file.path(plots_dir,"Deployment_AllYrs_SFV.png"), width = 10,height = 6)
 
 
 ## Normality check for: ######
