@@ -234,7 +234,7 @@ table(is.na(penalty_2022))
 penalty_output <- bind_rows(penalty_2019, penalty_2020, penalty_2021, penalty_2022)  %>% 
   left_join(ref %>% 
               select(-cert_name), by = c('NC_ID')) %>% 
-  select('Creation Date', NC_ID, cert_name, 'Neighborhood Council', 'Violation/Infraction/Issue', SFV)
+  select('Creation Date', NC_ID, cert_name, 'Violation/Infraction/Issue', SFV)
 
 
 # Join data to complete list of NCs (one method) ###############
@@ -334,12 +334,12 @@ penalty_month <- penalty_output %>%
   
   # add nc_id and SFV column
   left_join(penalty_output %>% 
-              select(cert_name, nc_id, SFV) %>% 
+              select(cert_name, NC_ID, SFV) %>% 
               distinct(), by = c("nc" = "cert_name")) %>% 
 
   # join monthly penalty data with trip data
-  left_join(trip_origin, by = c("Month" = "month", "nc_id" = "origin_nc_id")) %>% 
-  right_join(trip_dest, by = c("Month" = "month", "nc_id" = "dest_nc_id")) %>% 
+  left_join(trip_origin, by = c("Month" = "month", "NC_ID" = "origin_nc_id")) %>% 
+  right_join(trip_dest, by = c("Month" = "month", "NC_ID" = "dest_nc_id")) %>% 
   
   # remove rows without penalty data
   filter(Month > '2019-02') %>%
@@ -359,9 +359,14 @@ penalty_year <- penalty_month %>%
 
 ggplot(penalty_year, aes(x = year, y = penalty_n, fill = SFV)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_brewer(palette = "Paired", labels = c("Non-SFV", "SFV")) +
-  labs(x = "Year", y = "Number of Penalty", fill = "SFV") + 
-  theme_bw()  
+  scale_fill_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  labs(x = "Year", y = "Number of 311 Requests", fill = "SFV") + 
+  labs(
+    title = str_c("Figure X: ","Number of 311 Requests by SFV"),
+    caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
+  ) + 
+  theme_bw() +
+  theme(plot.background = element_rect(colour = "black"))   
 
 ggsave("output/plots/yearly_penalties_diff.png")
 
@@ -394,7 +399,7 @@ ggsave("output/plots/penalties_per_trip2.png")
 
 # Plot 4 - Penalty per trip by month (SFV regions and non-SFV regions)
 penalty_alter <- penalty_month %>% 
-  left_join(ref_new %>% select(-SFV), by = c("nc_id" = "NC_ID")) 
+  left_join(ref %>% select(-SFV), by = c("NC_ID" = "NC_ID")) 
 
 pa1 <- penalty_alter %>% 
   select(-c(Geo_Type, area_mi2, geometry, data_nc_name, cert_name)) %>% 
@@ -432,7 +437,7 @@ ggsave("output/plots/penalties_per_trip4.png")
 
 # Plot 6 - Penalties per square mile by month (SFV ncs and non-SFV ncs)
 pa3 <- penalty_alter %>% 
-  select(Month, nc, nc_id, penalty_n, area_mi2, SFV) %>% 
+  select(Month, nc, NC_ID, penalty_n, area_mi2, SFV) %>% 
   group_by(Month, nc, area_mi2, SFV) %>% 
   summarise(penalty_n = sum(penalty_n)) %>% 
   mutate(ppmpnc = penalty_n/area_mi2) %>% 
@@ -449,7 +454,7 @@ ggsave("output/plots/penalties_per_mi.png")
 
 # Plot 7 - Penalties per square mile by month (sum of all SFV ncs and sum of all non-SFV ncs)
 pa3_1 <- penalty_alter %>% 
-  select(Month, nc, nc_id, penalty_n, area_mi2, SFV) %>% 
+  select(Month, nc, NC_ID, penalty_n, area_mi2, SFV) %>% 
   group_by(Month, SFV) %>% 
   summarise(penalty_n = sum(penalty_n), area_mi2 = sum(area_mi2)) %>% 
   mutate(ppmpnc = penalty_n/area_mi2) %>% 
@@ -458,15 +463,20 @@ pa3_1 <- penalty_alter %>%
 ggplot(pa3_1, aes(x = Month, y = ppmpnc, color = SFV)) +
   geom_point() +
   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
-  labs(x = "month", y = "Penalties per mi^2 per NC") +
+  labs(x = "month", 
+       y = "311 Requests per mi^2",
+       title = str_c("Figure X: ","311 Requests per square mile by SFV"),
+       caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
+  ) +
   scale_x_discrete("Month", guide = guide_axis(angle = 45)) + 
-  theme_bw() 
+  theme_bw() +
+  theme(plot.background = element_rect(colour = "black")) 
 
 ggsave("output/plots/penalties_per_mi2.png")
 
 # Plot 8 - Penalties per square mile by month (group by geo_type)
 pa3_2 <- penalty_alter %>% 
-  select(Month, nc, nc_id, penalty_n, area_mi2, Geo_Type, SFV) %>% 
+  select(Month, nc, NC_ID, penalty_n, area_mi2, Geo_Type, SFV) %>% 
   group_by(Month, Geo_Type, SFV) %>% 
   na.omit() %>% 
   group_by(Month, Geo_Type) %>% 
@@ -482,3 +492,52 @@ ggplot(pa3_2, aes(x = Month, y = log(ppmpnc), color = Geo_Type)) +
   theme_bw() 
 
 ggsave("output/plots/penalties_per_mi3.png")
+
+# Plot 9 - Pilot year penalties summary graph
+summary <- penalty_month %>% 
+  mutate(Month = as.Date(paste0(Month, "-01"))) %>% 
+  select(-c(ori_trip_n, dest_trip_n, ppt_ori, ppt_dest)) %>% 
+  na.omit() %>% 
+  group_by(Month, SFV) %>% 
+  summarise(penalty_n = sum(penalty_n))
+
+pilot <- summary %>% 
+  filter(between(Month, as.Date("2019-04-01"), as.Date("2020-03-01")))
+
+ggplot(pilot, aes(x = as.numeric(Month), y = penalty_n, color = SFV)) +
+  geom_line() +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  scale_x_continuous("Month", labels = as.character(pilot$Month), 
+                     breaks = as.numeric(pilot$Month), 
+                     guide = guide_axis(angle = 45)) +
+  labs(x = "Month", 
+       y = "Number of 311 Requests",
+       title = str_c("Figure X: ","Number of 311 Requests during pilot year by SFV"),
+       caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
+  ) + 
+  theme_classic() +
+  theme(plot.background = element_rect(colour = "black")) 
+
+ggsave("output/plots/pilot_year_penalities.png")
+
+# Plot 10 - Post pilot year penalities summary raph
+post_pilot <- summary %>% 
+  filter(between(Month, as.Date("2020-04-01"), as.Date("2022-09-01")))
+
+ggplot(post_pilot, aes(x = as.numeric(Month), y = penalty_n, color = SFV)) +
+  geom_line() +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  scale_x_continuous("Month", labels = as.character(post_pilot$Month), 
+                     breaks = as.numeric(post_pilot$Month), 
+                     guide = guide_axis(angle = 45)) +
+  labs(x = "Month", 
+       y = "Number of 311 Requests",
+       title = str_c("Figure X: ","Number of 311 Requests by SFV"),
+       caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
+  ) + 
+  theme_classic() +
+  theme(plot.background = element_rect(colour = "black")) 
+
+ggsave("output/plots/post_pilot_year_penalities.png")
