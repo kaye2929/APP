@@ -68,12 +68,12 @@ depl_plot =
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
     title = str_c("Figure X: ","SFV and Non-SFV Deployment (","Pilot Program",")"),
-    subtitle = str_c("Deployment is reported as average monthly deployment"),
+    subtitle = str_c("Deployment is reported as the average number of vehicles available \neach day by month."),
     caption = "Source: LADOT CPRA Data"
   ) + 
   theme_classic()
   
-ggsave(plot = depl_plot,filename = file.path(plots_dir,"Deployment_SFV_Pilot.png"), width = 6,height = 5)
+ggsave(plot = depl_plot,filename = file.path(plots_dir,"Deployment_Pilot_SFV.png"), width = 6,height = 5)
 
 
 # 4. plot log transformed y-axis
@@ -202,7 +202,7 @@ depl_curr_plot =
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
     title = "Figure X: Deployment by Geography Types (Current Program)",
-    subtitle = "Deployment is reported as average monthly deployment",
+    subtitle = "Deployment is reported as the average number of vehicles available each day by month.",
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
@@ -232,7 +232,7 @@ depl_all_plot =
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
     title = "Appendix Figure X: Deployment All Months (2019-2022)",
-    subtitle = "Deployment is reported as average monthly deployment",
+    subtitle = "Deployment is reported as the average number of vehicles available each day by month.",
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
@@ -255,7 +255,7 @@ depl_allSFV_plot =
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
     title = "Appendix Figure X: Deployment All Months (2019-2022) by SFV",
-    subtitle = "Deployment is reported as average monthly deployment",
+    subtitle = "Deployment is reported as the average number of vehicles available each day by month.",
     color = "SFV",
     caption = "Source: LADOT CPRA Data"
   ) + 

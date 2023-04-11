@@ -1,12 +1,17 @@
-# Set Up ####
+############## Count Total Vehicles Deployed from API Data #############
+# Purpose: recount the number of vehicles in each NC and SOZ. Numbers used to generate summary statistics to see if operators met the 20% distribution threshold.
+
+# Set Up ##############
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx")
 
 # directories
 data_files_dir <- file.path('.','output','files')
 plots_dir <- file.path(".","output","plots")
 data_api_dir <- file.path('.','data','API - Swarm of Scooters')
 
+
+# Load Data ##############
 # load trip data
 # trip_df <- read.csv(file.path(data_files_dir,"Trip_OD_by_NC.csv"))
 # deploy_df <- read_csv(file.path(data_files_dir,"veh_depl_long.csv"))
@@ -19,127 +24,235 @@ data_api_dir <- file.path('.','data','API - Swarm of Scooters')
 
 nc_georef_wSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_wSOZ.geojson")) %>% 
   st_make_valid() %>% 
-  st_transform(4326) %>% 
-  mutate(OBJ_ID = 1:nrow(.))
+  st_transform(4326) %>% # set CRS to WGS 84
+  mutate(OBJ_ID = 1:nrow(.)) # add ID variable to join data after counting
 
-api_df = st_read(file.path(data_files_dir,"api_avg_deployment.geojson"))
+# load other files
+api_df = st_read(file.path(data_files_dir,"api_avg_deployment.geojson")) # Karen's work. Load to check info
 
-
-
-# TRY #################
-# set objects
-operator = c("Bird") # ,"wheels"
-hr_24 = 12
-
-# listing out all the files
-all_files = list.files(file.path(data_api_dir,operator),recursive = TRUE)
-all_files = all_files[grepl(pattern = str_c(hr_24,"021[6-7].csv"), all_files)]
-
-# make it as a function
-# define output
-output = data.frame(OBJ_ID = 1:nrow(nc_georef_wSOZ))
- ## here we defined DATE. obtain all the CSV dir for dates of interest
-# list out all the files that match the timestamp
-# in the loop, get the date, turn into 2023-01-19 format
-for (file_num in seq_along(all_files)) {
-  print(file_num)
-
-file_date = str_extract(all_files[file_num], "\\d{8}")
-file_date = as.POSIXct(file_date, format = "%Y%m%d", tz="")
-file_date = format(file_date,"%Y-%m-%d")
-
-csv_df = read_csv(file = file.path(data_api_dir,operator,all_files[file_num]))
-
-points =
-  st_as_sf(csv_df, coords = c("lon","lat"), crs = st_crs(4326))
+load(file = file.path(data_files_dir,"API_Exploring_Data.RData")) # my saved work. Load so that you don't need to renegerate anything
 
 
-points =
-  points %>% 
-  mutate(
-    poly_ID1 = st_intersects(points, nc_georef_wSOZ),
-    poly_ID1 = unlist(as.character(poly_ID1)),
-  ) %>% 
-  glimpse()
-
-set.seed(4832)
-
-points$poly_ID2 = NA
-for (j in seq_along(points$poly_ID1)) {
-  # Define the input as a string
-  input <- points$poly_ID1[j]
+# Function for Counting Vehicles in NC #################
+# 1. Set default values to 12pm
+veh_cts <- function(operator = c("Bird","wheels"), hr_24 = 12) {
   
-  # Use eval() and parse() to convert the string into a vector
-  vec <- eval(parse(text = input))
+  # 2. list out all the files for the operator
+  all_files = list.files(file.path(data_api_dir,operator),recursive = TRUE)
   
-  # Run through these conditions to identify the number
-  if (any(vec %in% 100)) {
-    numID = 100
-  } else if (any(vec %in% 101)) {
-    numID = 101
-  } else if (any(vec %in% 102)) {
-    numID = 102
-  } else if (length(vec) == 0 ) {
-    numID = 0
-  } else if (length(vec) == 1) {
-    numID = vec
-  } else {
-    numID = sample(vec, 1)
+  # 3. take subset of all the files for the selected hour
+  all_files = all_files[grepl(pattern = str_c(hr_24,"021[6-7].csv"), all_files)]
+  
+  # 4. define output with object ID
+  output = data.frame(OBJ_ID = 1:nrow(nc_georef_wSOZ))
+  
+  # begin loop
+  for (file_num in seq_along(all_files)) {
+  
+    # 5. obtain date of the file from the folder name. turn date into YYYY-MM-DD
+    file_date = str_extract(all_files[file_num], "\\d{8}")
+    file_date = as.POSIXct(file_date, format = "%Y%m%d", tz="")
+    file_date = format(file_date,"%Y-%m-%d")
+  
+    # 6. read csv for that specific date
+    writeLines(str_c("\nReading file: ",file.path(data_api_dir,operator,all_files[file_num])))
+    csv_df = read_csv(file = file.path(data_api_dir,operator,all_files[file_num]))
+  
+    # 7. turn csv into sf object with geometry column
+    points = st_as_sf(csv_df, coords = c("lon","lat"), crs = st_crs(4326))
+  
+    # 8. Spatial Join. for each bike ID, assign OBJ_ID of the polygon that the bike ID is inside. There are duplicates since some NC geos overlap. st_intersect and st_intersection returns the same result
+    within <- st_within(points, nc_georef_wSOZ) %>% as.data.frame()
+    
+    # 9. Count the number of points/bikes in each polygon ID (aka OBJ_ID).
+    counts =
+      within %>% 
+      count(col.id)
+    
+    # 10. Join the counted bikes to the output dataframe. Name column with date.
+    output = 
+      output %>% 
+      left_join(counts, by=c("OBJ_ID"="col.id")) %>% 
+      rename_with(~str_c(file_date), .cols = n)
   }
   
-  points$poly_ID2[j] = numID
+  # 11. Left join the NC Geo Reference File to output
+  output =
+    output %>% 
+    mutate(
+      
+      # sum the total count of vehicles across all 30 days
+      TotCt = rowSums(output %>% select(-OBJ_ID), na.rm = TRUE),
+      
+      # calculate month average 
+      AvgDepl = TotCt/length(all_files)) %>%
+    
+    # Left join reference file
+    left_join(nc_georef_wSOZ %>% 
+                as.data.frame() %>% 
+                select(-c(data_nc_name,geometry)), 
+              by="OBJ_ID")
+  
+  return(output)
 }
 
-counts = 
-  points %>% 
+# Run Function ######
+bird = veh_cts(operator = "Bird")
+wheels = veh_cts(operator = "wheels")
+
+######### summary stats about 20% ########
+# both bird and wheels deployed in Venice and Hollywood SOZ. but since they deployed in Venice, this distribution rule overrides the Hollywood rule. If deploy in Venice, must have 20% of total fleet in EFMDDs.
+
+# Report for the entire period of data. Since SOZs are double counted in their respective NCs, I removed SOZs from the total count of deployment. 
+
+# Write function to calculate the % of total fleet in EFMDDs
+pct_EFMDD <- function(df) {
+  # determine which col goes into function from loop
+  cols = c(names(df)[grepl("^2023",names(df))], "TotCt","AvgDepl")
+  
+  # create dataframe that will be filled with the %
+  df_out = data.frame(Date = cols, pct = NA)
+  
+  # loop through the column names of interest
+  for (i in names(df)) {
+    if (!i %in% cols) {next}
+    pcts = 
+      df %>% 
+      group_by(Geo_Type) %>% 
+      summarise(ct = sum(.data[[i]], na.rm = TRUE)) %>% 
+      mutate(
+        tot_noSOZ = sum(.data$ct[!grepl("Special",.data$Geo_Type)]),
+        pct = ct/tot_noSOZ)
+    
+    # add the % of vehicles in EFMDD in df_out
+    df_out$pct[df_out$Date %in% i] = pcts$pct[pcts$Geo_Type %in% "Equity-Focus Mobility Development District"]
+  }
+  
+  return(df_out)
+}
+
+bird_pct = pct_EFMDD(bird) # never compliant
+wheels_pct = pct_EFMDD(wheels) # 3 days compliant
+# Bird on avg 11.1% and wheels on avg 12.4% in EFMDDs.
+
+
+# Minimum Deployment #################
+bird_tot =
+  bird %>% 
   as.data.frame() %>% 
-  filter(poly_ID2 != 0) %>% 
-  count(poly_ID2)
+  filter(!grepl("Special",Geo_Type)) %>% 
+  select(matches("^2023")) %>% 
+  summarise_all(~sum(.,na.rm = TRUE)) %>% 
+  pivot_longer(cols = everything(),
+               names_to = "Date",
+               values_to = "Bird")
+  
+wheels_tot =
+  wheels %>% 
+  as.data.frame() %>% 
+  filter(!grepl("Special",Geo_Type)) %>% 
+  select(matches("^2023")) %>% 
+  summarise_all(~sum(.,na.rm = TRUE)) %>% 
+  pivot_longer(cols = everything(),
+               names_to = "Date",
+               values_to = "Wheels")
 
-output = 
-  output %>% 
-  left_join(counts, by=c("OBJ_ID"="poly_ID2")) %>% 
-  rename_with(~str_c(file_date), .cols = n)
-}
-
-#### Next
-# 
+operators_tot =
+  bird_tot %>% 
+  left_join(wheels_tot, by="Date")
 
 
-######### summary stats about 20%
-output =
-  output %>% 
-  mutate(TotCt = rowSums(output %>% select(-OBJ_ID), na.rm = TRUE),
-         AvgDepl = TotCt/30) %>%
-  left_join(nc_georef_wSOZ %>% select(OBJ_ID,NC_ID), by="OBJ_ID") %>% 
+# Compare Counts to Karen's work ###########
+compare = 
+  bird %>% 
+  select(cert_name, NC_ID, AvgDepl) %>% 
+  rename(bird_AvgDepl = AvgDepl) %>% 
+  left_join(wheels %>% 
+              select(NC_ID, AvgDepl) %>% 
+              rename(wheels_AvgDepl = AvgDepl),
+            by = "NC_ID") %>% 
+  left_join(api_df %>% 
+              select(nc_id, bird_avg, wheels_avg),
+            by=c("NC_ID"="nc_id"))
+# our percentages are very close
+
+
+# Join the tables #################
+operators_pct =
+  bird_pct %>% 
+  rename(Bird=pct) %>% 
+  left_join(wheels_pct %>% 
+              rename(Wheels=pct),
+            by="Date") %>% 
+  pivot_longer(cols = c("Bird","Wheels"),
+               names_to = "Operator",
+               values_to = "pct") %>% 
   glimpse()
+  
 
+# Plot %s ##############
+# Join data to one dataframe, leave NAs for wheels. pivot longer. filter out Avg and Tot
+depl_pct =
+  operators_pct %>% 
+  filter(grepl("\\d+",Date)) %>% 
+  ggplot(aes(x=Date, y=pct, color=Operator)) +
+  geom_line(aes(group=Operator)) +
+  geom_point() +
+  geom_hline(yintercept = .2,color="grey", linetype="dashed") +
+  scale_color_manual(
+    values = c(
+      "Bird"="plum3",
+      "Wheels"="tomato2")) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Percent of Vehicles in EFMDDs\n", breaks = pretty_breaks(4),labels = label_number(scale = 100, suffix = "%")) +
+  labs(
+    title = str_c("Figure X: Daily Deployment in EFMDDs (January to February 2023)"),
+    subtitle = str_c("Operators deploy less than 20% of their total fleet in EFMDDs."),
+    caption = "Source: Swarm of Scooters API \nNote: API scrape for Wheels began 5 days after starting the scrape for Bird. "
+  ) + 
+  theme_classic()
+      
+# ggsave(plot = depl_pct,filename = file.path(plots_dir,"EFMDD_Depl_API.png"), width = 8,height = 5)
 
-# compare to Karen's work
-api_df = 
-  api_df %>% 
-  left_join(output %>% select(NC_ID,AvgDepl), by=c("nc_id"="NC_ID"))
+# Save Tables #############
+# exclude SOZs in count of total since they are double counted
+bird_sumTot = 
+  bird %>% 
+  group_by(Geo_Type) %>% 
+  summarise(ct = sum(TotCt, na.rm = TRUE)) %>% 
+  mutate(
+    tot_noSOZ = sum(.data$ct[!grepl("Special",.data$Geo_Type)]),
+    pct = ct/tot_noSOZ,
+    row.id = c(1,2,4,3)) %>% 
+  arrange(row.id) # 11.1%
 
+wheels_sumTot = 
+  wheels %>% 
+  group_by(Geo_Type) %>% 
+  summarise(ct = sum(TotCt, na.rm = TRUE)) %>% 
+  mutate(
+    tot_noSOZ = sum(.data$ct[!grepl("Special",.data$Geo_Type)]),
+    pct = ct/tot_noSOZ,
+    row.id = c(1,2,4,3)) %>% 
+  arrange(row.id) # 12.4%
+# how to save as excel on different sheets
 
-########## exploration
-time_all =
-  t06am %>% 
-  left_join(t07am, by='poly_ID2', suffix=c('_06am','_07am')) %>% 
-  left_join(t08am, by='poly_ID2', suffix=c("",'_08am')) %>% 
-  left_join(t09am, by='poly_ID2', suffix=c("", '_09am')) %>% 
-  left_join(t10am, by='poly_ID2', suffix=c("", '_10am')) %>% 
-  left_join(t11am, by='poly_ID2', suffix=c("", '_11am')) %>% 
-  left_join(t12pm, by='poly_ID2', suffix=c("", '_12pm')) 
+# Notes #############
+# consistently, there are 36 NCs that do not have any Bird vehicles located there
 
-# consistently, there are 36 NCs that do not have any vehicles located there
-nc_georef_wSOZ %>% 
-  filter(!OBJ_ID %in% time_all$poly_ID2) %>% 
-  as.data.frame() %>% 
-  select(cert_name)
+# Export #############
+# save(time_all,bird,wheels, file = file.path(data_files_dir,"API_Exploring_Data.RData"))
 
-# check to see if they intersect
-ggplot() +
-  geom_sf(data = points) +
-  geom_sf(data = org_geos)
+xl_sheets = list(
+  "Bird_DailyCt_NC" = bird,
+  "Wheels_DailyCt_NC" = wheels,
+  "Bird_Summary_Geos" = bird_sumTot,
+  "Wheels_Summary_Geos" = wheels_sumTot,
+  "Operators_EFMDD_Pct" = operators_pct,
+  "Operators_TotDepl" = operators_tot
+)
 
-# save(time_all, file = file.path(data_files_dir,"API_Exploring_Data.RData"))
+# openxlsx::write.xlsx(xl_sheets, file = file.path(data_files_dir,"API_BirdWheels_Summary.xlsx"))
+
+# scratch #####
+

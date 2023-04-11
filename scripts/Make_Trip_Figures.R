@@ -65,42 +65,42 @@ tr_org =
 # we kept the code below just in case.
 
 # 1. only keep trip counts for the months in the specific years (Pilot Program)
-# yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
-# tr_org_ppyr =
-#   tr_org %>% 
-#   filter(grepl(yr_regex,month)) %>% 
-#   mutate(days_mo = lubridate::days_in_month(month))
-# 
-# # 2. calculate average for SFV and non SFV
-# tr_org_ppyr_sum =
-#   tr_org_ppyr %>% 
-#   group_by(SFV,month,days_mo) %>% 
-#   summarise(sum = sum(trips, na.rm=TRUE)) %>% 
-#   group_by(SFV) %>% 
-#   summarise(avg_tr = weighted.mean(sum, days_mo, na.rm=TRUE))
-# 
-# # 3. plot deployment by SFV and not
-# tr_org_ppyr_plot =
-#   tr_org_ppyr %>% 
-#   group_by(SFV,month) %>% 
-#   summarise(sum = sum(trips, na.rm=TRUE)) %>% 
-#   ggplot(aes(x=as.character(month),y=sum,color=SFV)) +
-#   geom_line(aes(group=SFV)) +
-#   geom_point() +
-#   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
-#   geom_hline(yintercept = c(tr_org_ppyr_sum$avg_tr[1],tr_org_ppyr_sum$avg_tr[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
-#   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
-#   scale_y_continuous("Trips\n", breaks = pretty_breaks(10),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
-#   labs(
-#     title = str_c("Figure X: ","SFV and Non-SFV Total Trips (","Pilot Program",")"),
-#     subtitle = str_c("Trips are reported as total monthly trips starting in the SFV"),
-#     caption = "Source: LADOT CPRA Data"
-#   ) +
-#   theme_classic()
-# 
-# ggsave(plot = tr_org_ppyr_plot,filename = file.path(plots_dir,"Trips_Origin_Total_Pilot.png"), width = 6,height = 5)
-# 
-# 
+yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
+tr_org_ppyr =
+  tr_org %>%
+  filter(grepl(yr_regex,month)) %>%
+  mutate(days_mo = lubridate::days_in_month(month))
+
+# 2. calculate average for SFV and non SFV
+tr_org_ppyr_sum =
+  tr_org_ppyr %>%
+  group_by(SFV,month,days_mo) %>%
+  summarise(sum = sum(trips, na.rm=TRUE)) %>%
+  group_by(SFV) %>%
+  summarise(avg_tr = weighted.mean(sum, days_mo, na.rm=TRUE))
+
+# 3. plot deployment by SFV and not
+tr_org_ppyr_plot =
+  tr_org_ppyr %>%
+  group_by(SFV,month) %>%
+  summarise(sum = sum(trips, na.rm=TRUE)) %>%
+  ggplot(aes(x=as.character(month),y=sum,color=SFV)) +
+  geom_line(aes(group=SFV)) +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  # geom_hline(yintercept = c(tr_org_ppyr_sum$avg_tr[1],tr_org_ppyr_sum$avg_tr[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Trips\n", breaks = pretty_breaks(10),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Figure X: SFV and Non-SFV Total Trips (Pilot Program)"),
+    subtitle = str_c("Trips are reported as total monthly trips starting in the SFV"),
+    caption = "Source: LADOT CPRA Data"
+  ) +
+  theme_classic()
+
+ggsave(plot = tr_org_ppyr_plot,filename = file.path(plots_dir,"Trips_Pilot_Tot.png"), width = 6,height = 5)
+
+
 # # 4. plot log transformed y-axis
 # tr_org_ppyr_log_plot =
 #   tr_org_ppyr_plot +
@@ -114,12 +114,7 @@ tr_org =
 
 # Plots 2: PPYR Trips Averaged ##############
 # 1. reuse df from previous section. kept trips for the months in the specific years (Pilot Program). 
-yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
-tr_org_ppyr =
-  tr_org %>%
-  filter(grepl(yr_regex,month)) %>%
-  mutate(days_mo = lubridate::days_in_month(month))
-
+tr_org_ppyr
 
 # 2. calculate average trips for SFV and non SFV
 tr_org_ppyr_avg =
@@ -136,17 +131,17 @@ tr_org_ppyr_avg_plot =
   geom_line(aes(group=SFV)) +
   geom_point() +
   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
-  geom_hline(yintercept = c(tr_org_ppyr_avg$avg_tr[1],tr_org_ppyr_avg$avg_tr[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
+  # geom_hline(yintercept = c(tr_org_ppyr_avg$avg_tr[1],tr_org_ppyr_avg$avg_tr[2]), linetype='dashed', color=c('dodgerblue3','tomato2')) +
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Figure X: ","SFV and Non-SFV Average Trips (","Pilot Program",")"),
+    title = str_c("Figure X: SFV and Non-SFV Average Trips (Pilot Program)"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in the SFV"),
     caption = "Source: LADOT CPRA Data"
   ) +
   theme_classic()
 
-ggsave(plot = tr_org_ppyr_avg_plot,filename = file.path(plots_dir,"Trips_Origin_Avg_Pilot.png"), width = 6,height = 5)
+ggsave(plot = tr_org_ppyr_avg_plot,filename = file.path(plots_dir,"Trips_Pilot_Avg.png"), width = 6,height = 5)
 
 
 # 4. plot log transformed y-axis
@@ -162,7 +157,7 @@ ggsave(plot = tr_org_ppyr_avg_plot,filename = file.path(plots_dir,"Trips_Origin_
 # ggsave(plot = tr_org_ppyr_logavg_plot,filename = file.path(plots_dir,"Trips_Origin_LogAvg_Pilot.png"), width = 6,height = 5)
 
 
-# Plots 3: Trips During Current Program ############
+# Plots 3: Trips Current Program ############
 # 1. filter for months April 2020 to Sept 2022
 yr_regex = "2020-0[4-9]|2020-1[0-2]|202[1-2]"
 tr_curr =
@@ -171,8 +166,8 @@ tr_curr =
   mutate(days_mo = lubridate::days_in_month(month))
 
 
-# 2. plot deployment by 4 geo types
-tr_curr_plot =
+# 2. plot deployment by 4 geo types with average
+tr_curr_avg =
   tr_curr %>% 
   group_by(Geo_Type_wSOZ,month) %>% 
   summarise(avg = mean(trips, na.rm=TRUE)) %>% 
@@ -190,14 +185,43 @@ tr_curr_plot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Figure X: ","Trips by Geography Types (Current Program",")"),
+    title = str_c("Figure X: ","Avergae Trips by Geography Types (Current Program",")"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
   theme_classic()
 
-ggsave(plot = tr_curr_plot,filename = file.path(plots_dir,"Trips_Current.png"), width = 8,height = 5)
+ggsave(plot = tr_curr_avg,filename = file.path(plots_dir,"Trips_Current_Avg.png"), width = 8,height = 5)
+
+
+# trip totals during program geos
+tr_curr_tot =
+  tr_curr %>% 
+  group_by(Geo_Type_wSOZ,month) %>% 
+  summarise(avg = sum(trips, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month),y=avg,color=Geo_Type_wSOZ)) +
+  geom_line(aes(group=Geo_Type_wSOZ)) +
+  geom_point() +
+  scale_color_manual(
+    values = c(
+      "SOZ"="plum3",
+      "MDD"="tomato2",
+      "EFMDD"="dodgerblue3",
+      "SPD"="olivedrab3"
+    ),
+    breaks = c("SOZ","MDD","EFMDD","SPD")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Figure X: ","Total Trips by Geography Types (Current Program",")"),
+    subtitle = str_c("Trips are reported as total monthly trips for a trip starting in a Program Geography"),
+    color = "Program Geographies",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = tr_curr_tot,filename = file.path(plots_dir,"Trips_Current_Total.png"), width = 8,height = 5)
 
 
 # Exploratory
@@ -215,7 +239,37 @@ Nov21=tr_org %>%
 
 # Plot 4: Trips across all months ###########
 # for appendix, no filtering by Program or years
-tr_all_plot =
+# TOTAL
+tr_all_tot =
+  tr_org %>% 
+  group_by(Geo_Type_wSOZ,month) %>% 
+  summarise(avg = sum(trips, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month),y=avg,color=Geo_Type_wSOZ)) +
+  geom_line(aes(group=Geo_Type_wSOZ)) +
+  geom_point() +
+  scale_color_manual(
+    values = c(
+      "SOZ"="plum3",
+      "MDD"="tomato2",
+      "EFMDD"="dodgerblue3",
+      "SPD"="olivedrab3"
+    ),
+    breaks = c("SOZ","MDD","EFMDD","SPD")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Appendix Figure X: Total Trips by Geography Types (2019-2022)"),
+    subtitle = str_c("Trips are reported as total monthly trips for a trip starting in a Program Geography."),
+    color = "Program Geographies",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = tr_all_tot,filename = file.path(plots_dir,"Trips_AllYrs_Tot.png"), width = 10,height = 6)
+
+
+# AVERAGE
+tr_all_avg =
   tr_org %>% 
   group_by(Geo_Type_wSOZ,month) %>% 
   summarise(avg = mean(trips, na.rm=TRUE)) %>% 
@@ -233,19 +287,41 @@ tr_all_plot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Trips by Geography Types (2019-2022)"),
-    subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
+    title = str_c("Appendix Figure X: Average Trips by Geography Types (2019-2022)"),
+    subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography."),
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
   theme_classic()
 
-ggsave(plot = tr_all_plot,filename = file.path(plots_dir,"Trips_AllYrs.png"), width = 10,height = 6)
+ggsave(plot = tr_all_avg,filename = file.path(plots_dir,"Trips_AllYrs_Avg.png"), width = 10,height = 6)
 
 # Plot 5: Trips across all months by SFV ###########
 # for appendix, no filtering by Program or years
 # for penalties analysis
-tr_allSFV_plot =
+# TOT
+tr_allSFV_tot =
+  tr_org %>% 
+  group_by(SFV,month) %>% 
+  summarise(avg = sum(trips, na.rm=TRUE)) %>% 
+  ggplot(aes(x=as.character(month),y=avg,color=SFV)) +
+  geom_line(aes(group=SFV)) +
+  geom_point() +
+  scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
+  scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Appendix Figure X: Total Trips by SFV (2019-2022)"),
+    subtitle = str_c("Trips are reported as total monthly trips for a trip starting in a Program Geography"),
+    color = "SFV",
+    caption = "Source: LADOT CPRA Data"
+  ) + 
+  theme_classic()
+
+ggsave(plot = tr_allSFV_tot,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Tot.png"), width = 10,height = 6)
+
+# AVG
+tr_allSFV_avg =
   tr_org %>% 
   group_by(SFV,month) %>% 
   summarise(avg = mean(trips, na.rm=TRUE)) %>% 
@@ -256,11 +332,11 @@ tr_allSFV_plot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Trips by SFV (2019-2022)"),
+    title = str_c("Appendix Figure X: Average Trips by SFV (2019-2022)"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
     color = "SFV",
     caption = "Source: LADOT CPRA Data"
   ) + 
   theme_classic()
 
-ggsave(plot = tr_allSFV_plot,filename = file.path(plots_dir,"Trips_AllYrs_SFV.png"), width = 10,height = 6)
+ggsave(plot = tr_allSFV_avg,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Avg.png"), width = 10,height = 6)
