@@ -4,7 +4,7 @@
 
 # Set Up ####
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont")
 
 # directories
 data_files_dir <- file.path('.','output','files')
@@ -83,13 +83,13 @@ tr_all_tot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Total Trips by Geography Types (2019-2022)"),
+    title = str_c("Appendix Figure 6: Total Trips by Geography Types (2019-2022)"),
     subtitle = str_c("Trips are reported as total monthly trips for a trip starting in a Program Geography."),
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme(text = element_text(family = "Century Gothic")) +
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
 
 ggsave(plot = tr_all_tot,filename = file.path(plots_dir,"Trips_AllYrs_Tot.png"), width = 10,height = 6)
 
@@ -113,12 +113,13 @@ tr_all_avg =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Average Trips by Geography Types (2019-2022)"),
+    title = str_c("Appendix Figure 8: Average Trips by Geography Types (2019-2022)"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography."),
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
 
 ggsave(plot = tr_all_avg,filename = file.path(plots_dir,"Trips_AllYrs_Avg.png"), width = 10,height = 6)
 
@@ -136,12 +137,13 @@ tr_allSFV_tot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Total Trips by SFV (2019-2022)"),
+    title = str_c("Appendix Figure 5: Total Trips by SFV (2019-2022)"),
     subtitle = str_c("Trips are reported as total monthly trips for a trip starting in a Program Geography"),
     color = "SFV",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
 
 ggsave(plot = tr_allSFV_tot,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Tot.png"), width = 10,height = 6)
 
@@ -157,12 +159,13 @@ tr_allSFV_avg =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Appendix Figure X: Average Trips by SFV (2019-2022)"),
+    title = str_c("Appendix Figure 7: Average Trips by SFV (2019-2022)"),
     subtitle = str_c("Trips are reported as average monthly trips for a trip starting in a Program Geography"),
     color = "SFV",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
 
 ggsave(plot = tr_allSFV_avg,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Avg.png"), width = 10,height = 6)
 
@@ -178,7 +181,7 @@ tr_org_ppyr_plot =
   tr_allSFV_tot +
   scale_x_discrete("\nMonth", limits = pp_months, guide = guide_axis(angle = 45)) +
   labs(
-    title = str_c("Figure X: SFV and Non-SFV Total Trips (Pilot Program)"),
+    title = str_c("Figure 5: SFV and Non-SFV Total Trips (Pilot Program)"),
     subtitle = str_c("Trips are reported as total monthly trips starting in the SFV."),
     caption = "Source: LADOT CPRA Data")
   
@@ -196,7 +199,7 @@ tr_org_ppyr_avg_plot =
   tr_allSFV_avg +
   scale_x_discrete("\nMonth", limits = pp_months, guide = guide_axis(angle = 45)) +
   labs(
-    title = str_c("Figure X: SFV and Non-SFV Average Trips (Pilot Program)"),
+    title = str_c("Figure 6: SFV and Non-SFV Average Trips (Pilot Program)"),
     subtitle = str_c("Trips are reported as average monthly trips starting in the SFV."),
     caption = "Source: LADOT CPRA Data")
 
@@ -216,7 +219,7 @@ tr_curr_tot =
   scale_x_discrete("\nMonth", limits = curr_months, guide = guide_axis(angle = 45)) +
   scale_y_continuous("Total Trips\n", limits = c(0,350000), breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Figure X: Total Trips by Geography Types (Current Program)"),
+    title = str_c("Figure 11: Total Trips by Geography Types (Current Program)"),
     subtitle = str_c("Trips are reported as total monthly trips starting in a Program Geography."),
     caption = "Source: LADOT CPRA Data")
 
@@ -235,7 +238,7 @@ tr_curr_avg =
   scale_x_discrete("\nMonth", limits = curr_months, guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Trips\n", limits = c(0,70000), breaks = pretty_breaks(8),labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
   labs(
-    title = str_c("Figure X: Average Trips by Geography Types (Current Program)"),
+    title = str_c("Figure 12: Average Trips by Geography Types (Current Program)"),
     subtitle = str_c("Trips are reported as average monthly trips starting in a Program Geography."),
     caption = "Source: LADOT CPRA Data")
 
@@ -281,19 +284,21 @@ tr_ppTop3_plot =
   ggplot(aes(x=reorder(origin_new_nc_name,total), y=total, fill=SFV)) +
   geom_col(aes(group=SFV)) +
   geom_label(
-    aes(label = comma(total)),hjust = -.1,size=3, fill = grey(0.95), label.size = 0) +
+    aes(label = comma(total)),hjust = -.1,size=3, fill = grey(0.95), label.size = 0, family = "Century Gothic") +
   scale_fill_manual(
     values = c("dodgerblue3", "tomato2"), 
     labels = c("Non-SFV", "SFV")) +
-  scale_x_discrete("Neighborhood Council", labels = function(x) str_wrap(x, width = 10)) +
+  scale_x_discrete("Neighborhood Councils", labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous("\nTotal Trips", limits = c(0,2250000), breaks = pretty_breaks(8),labels = label_number(scale = .000001, suffix = "M", big.mark = ",")) +
   labs(
-    title = "Figure X: Top 3 Neighborhood Councils with Highest Total Trip for SFV and Non-SFV Areas",
+    title = "Figure 4: Top 3 Neighborhood Councils with Highest Total Trip for SFV and Non-SFV Areas",
     subtitle = "Trips are reported as the total number of trips during the Pilot Program (April 2019 to March 2020).",
     caption = "Source: LADOT CPRA Data"
   ) +
   coord_flip() +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic"))
+
 
 ggsave(plot = tr_ppTop3_plot, filename = file.path(plots_dir,"Trips_Pilot_Top3.png"),width = 10,height = 7)
 
@@ -302,7 +307,7 @@ ggsave(plot = tr_ppTop3_plot, filename = file.path(plots_dir,"Trips_Pilot_Top3.p
 # SS 2: Current Prog Geos ###############
 tr_curr =
   tr_org %>% 
-  filter(month %in% curr_months)
+  filter(month %in% curr_months, !month %in% '2021-12-01')
 
 # average and total trips in SFV
 summ_curr_avg =
@@ -338,24 +343,26 @@ tr_currTop3_plot =
   ggplot(aes(x=reorder(origin_new_nc_name,total), y=total, fill=Geo_Type_wSOZ)) +
   geom_col(aes(group=Geo_Type_wSOZ)) +
   geom_label(
-    aes(label = comma(total)),hjust = -.1,size=3, fill = grey(0.95), label.size = 0) +
+    aes(label = comma(total)),hjust = -.1,size=3, fill = grey(0.95), label.size = 0, family = "Century Gothic") +
   scale_fill_manual(
     name = "Program Geographies",
     values = c(
       "SOZ"="plum3",
       "MDD"="tomato2",
       "EFMDD"="dodgerblue3",
-      "SPD"="olivedrab3"
-    )) +
-  scale_x_discrete("Neighborhood Council", labels = function(x) str_wrap(x, width = 15)) +
+      "SPD"="olivedrab3"),
+    breaks = c("SOZ","MDD","EFMDD","SPD")) +
+  scale_x_discrete("Neighborhood Councils", labels = function(x) str_wrap(x, width = 15)) +
   scale_y_continuous("\nTotal Trips", limits = c(0,3750000), breaks = pretty_breaks(8),labels = label_number(scale = .000001, suffix = "M")) +
   labs(
-    title = "Figure X: Top 3 Neighborhood Councils with Highest Total Trip for Each Program Geography",
+    title = "Figure 13: Top 3 Neighborhood Councils with Highest Total Trips for Each Program Geography",
     subtitle = "Trips are reported as the total number of trips during the Current Program (April 2020 to September 2022).",
     caption = "Source: LADOT CPRA Data"
   ) +
   coord_flip() +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic"))
+
 
 ggsave(plot = tr_currTop3_plot, filename = file.path(plots_dir,"Trips_Current_Top3.png"),width = 10,height = 7)
 
@@ -384,6 +391,26 @@ xl_sheets =
   )
 
 # write.xlsx(xl_sheets, file = file.path(data_files_dir, "TripCt_Summary.xlsx"))
+
+
+# Plot 11: April 2021 Range ########
+# 1. only keep trip counts for the months in the specific months
+yr_regex = "2021-0[2-6]"
+apr_months = unique(tr_org$month) %>% 
+  grep(yr_regex,.,value = TRUE)
+
+# 2. edit the previous complete plot, change labels
+tr_apr21_plot =
+  tr_all_tot +
+  scale_x_discrete("\nMonth", limits = apr_months, guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Total Trips\n", breaks = pretty_breaks(8),limits = c(0,350000), labels = label_number(scale = .001, suffix = "K", big.mark = ",")) +
+  labs(
+    title = str_c("Figure 21: Total Trips from February to June 2021"),
+    subtitle = str_c("Deployment is reported as the average number of vehicles\navailable each day by month."),
+    caption = "Source: LADOT CPRA Data")
+
+# 3. save plot
+ggsave(plot = tr_apr21_plot,filename = file.path(plots_dir,"Trips_Apr21_Tot.png"), width = 6,height = 7)
 
 
 # Storage #############

@@ -4,7 +4,7 @@
 
 # Set Up ####
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont")
 
 # directories
 data_files_dir <- file.path('.','output','files')
@@ -59,12 +59,13 @@ depl_all_plot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
-    title = "Appendix Figure X: Deployment All Months (2019-2022)",
+    title = "Appendix Figure 4: Deployment All Months (2019-2022)",
     subtitle = "Deployment is reported as the average number of vehicles available each day by month.",
     color = "Program Geographies",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
 
 ggsave(plot = depl_all_plot,filename = file.path(plots_dir,"Deployment_AllYrs.png"), width = 10,height = 6)
 
@@ -82,18 +83,20 @@ depl_allSFV_plot =
   scale_x_discrete("\nMonth",guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Deployment\n", breaks = pretty_breaks(8)) +
   labs(
-    title = "Appendix Figure X: Deployment All Months (2019-2022) by SFV",
+    title = "Appendix Figure 3: Deployment All Months (2019-2022) by SFV",
     subtitle = "Deployment is reported as the average number of vehicles available each day by month.",
     color = "SFV",
     caption = "Source: LADOT CPRA Data"
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
+
 
 ggsave(plot = depl_allSFV_plot,filename = file.path(plots_dir,"Deployment_AllYrs_SFV.png"), width = 10,height = 6)
 
 # P3: PP Avg by SFV ####
 # plot deployment during Pilot Program (Apr 2019-Mar2020), group by SFV or not
-
+# Figure 2
 # 1. only keep deployment for the months in the specific years (Pilot Program)
 yr_regex = "2019-0[4-9]|2019-1[0-2]|2020-0[1-3]"
 pp_months = unique(depl_joined$month_yr) %>% 
@@ -104,7 +107,7 @@ depl_ppSFV_plot =
   depl_allSFV_plot +
   scale_x_discrete("\nMonth", limits = pp_months, guide = guide_axis(angle = 45)) +
   labs(
-    title = str_c("Figure X: SFV and Non-SFV Deployment (Pilot Program)"),
+    title = str_c("Figure 2: SFV and Non-SFV Deployment (Pilot Program)"),
     subtitle = str_c("Deployment is reported as the average number of vehicles available \neach day by month."),
     caption = "Source: LADOT CPRA Data")
   
@@ -125,7 +128,7 @@ depl_curr_plot =
   scale_x_discrete("\nMonth", limits = curr_months, guide = guide_axis(angle = 45)) +
   scale_y_continuous("Average Deployment\n", limits = c(0,1300), breaks = pretty_breaks(8)) +
   labs(
-    title = str_c("Figure X: Deployment by Geography Types (Current Program)"),
+    title = str_c("Figure 9: Deployment by Geography Types (Current Program)"),
     subtitle = str_c("Deployment is reported as the average number of vehicles available each day by month."),
     caption = "Source: LADOT CPRA Data")
 
@@ -153,6 +156,7 @@ summ_pp_max =
   select(NC_ID:SFV,Geo_Type_wSOZ,-data_nc_name)
 
 # P5: PP Top 3 Depl #############
+# Figure 3
 # NCs with Top avg depl, help show the range
 summ_pp_top_depl =
   depl_pilot %>% 
@@ -169,19 +173,23 @@ depl_ppTop3_plot =
   ggplot(aes(x=reorder(cert_name,wtavg), y=wtavg, fill=SFV)) +
   geom_col(aes(group=SFV)) +
   geom_label(
-    aes(label = comma(round(wtavg))),hjust = -.1,size=3, fill = grey(0.95), label.size = 0) +
+    aes(label = comma(round(wtavg))),
+    hjust = -.1,size=3, fill = grey(0.95), label.size = 0,
+    family = "Century Gothic") +
   scale_fill_manual(
     values = c("dodgerblue3", "tomato2"), 
     labels = c("Non-SFV", "SFV")) +
-  scale_x_discrete("Neighborhood Council", labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous("\nAverage Deployment") +
+  scale_x_discrete("Neighborhood Councils", labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous("\nAverage Deployment", limits = c(0,2600), breaks = pretty_breaks(8)) +
   labs(
-    title = "Figure X: Top 3 Neighborhood Councils with Highest  Deployment for SFV and Non-SFV Areas",
+    title = "Figure 3: Top 3 Neighborhood Councils with Highest Deployment for SFV and Non-SFV Areas",
     subtitle = "Deployment is the average deployment during the Pilot Program (April 2019 to March 2020).",
     caption = "Source: LADOT CPRA Data"
   ) +
   coord_flip() +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic"))
+
 
 ggsave(plot = depl_ppTop3_plot, filename = file.path(plots_dir,"Deployment_Pilot_Top3.png"),width = 10,height = 7)
 
@@ -222,24 +230,26 @@ depl_currTop3_plot =
   ggplot(aes(x= reorder(cert_name,wtavg), y=wtavg, fill=Geo_Type_wSOZ)) +
   geom_col(aes(group=Geo_Type_wSOZ)) +
   geom_label(
-    aes(label = comma(round(wtavg))),hjust = -.1,size=3, fill = grey(0.95), label.size = 0) +
+    aes(label = comma(round(wtavg))),hjust = -.1,size=3, fill = grey(0.95), label.size = 0, family = "Century Gothic") +
   scale_fill_manual(
     name = "Program Geographies",
     values = c(
       "SOZ"="plum3",
       "MDD"="tomato2",
       "EFMDD"="dodgerblue3",
-      "SPD"="olivedrab3"
-    )) +
-  scale_x_discrete("Neighborhood Council", labels = function(x) str_wrap(x, width = 15)) +
-  scale_y_continuous("\nAverage Deployment") +
+      "SPD"="olivedrab3"),
+    breaks = c("SOZ","EFMDD","MDD","SPD")) +
+  scale_x_discrete("Neighborhood Councils", labels = function(x) str_wrap(x, width = 15)) +
+  scale_y_continuous("\nAverage Deployment", limits = c(0,2300)) +
   labs(
-    title = "Figure X: Top 3 Neighborhood Councils with Highest Deployment for Each Program Geography",
+    title = "Figure 10: Top 3 Neighborhood Councils with Highest Deployment for Each Program Geography",
     subtitle = "Deployment is the average deployment during the current program (April 2020 to September 2022).",
     caption = "Source: LADOT CPRA Data"
   ) +
   coord_flip() +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(family = "Century Gothic"))
+
 
 ggsave(plot = depl_currTop3_plot, filename = file.path(plots_dir,"Deployment_Current_Top3.png"),width = 10.5,height = 7)
 
@@ -255,6 +265,26 @@ xl_sheets =
 
 # write.xlsx(xl_sheets, file = file.path(data_files_dir, "Depl_Summary.xlsx"))
 
+
+# P7: April 21 Range #############
+# 1. select the months
+yr_regex = "2021-0[2-6]"
+apr_months = unique(depl_joined$month_yr) %>% 
+  grep(yr_regex,.,value = TRUE)
+
+
+# 2. edit previous complete plot, add label changes
+depl_apr21_plot =
+  depl_all_plot +
+  scale_x_discrete("\nMonth", limits = apr_months, guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Average Deployment\n", limits = c(0,1200), breaks = pretty_breaks(8)) +
+  labs(
+    title = str_c("Figure 20: Deployment from February to June 2021"),
+    subtitle = str_c("Deployment is reported as the average number of vehicles\navailable each day by month."),
+    caption = "Source: LADOT CPRA Data")
+
+# 3. save plot
+ggsave(plot = depl_apr21_plot,filename = file.path(plots_dir,"Deployment_Apr21.png"), width = 6,height = 7)
 
 # Normality check for: ######
 # sq mi2, per capita, and per capita >18

@@ -135,6 +135,18 @@ bird_pct = pct_EFMDD(bird) # never compliant
 wheels_pct = pct_EFMDD(wheels) # 3 days compliant
 # Bird on avg 11.1% and wheels on avg 12.4% in EFMDDs.
 
+# Join the pct tables #################
+operators_pct =
+  bird_pct %>% 
+  rename(Bird=pct) %>% 
+  left_join(wheels_pct %>% 
+              rename(Wheels=pct),
+            by="Date") %>% 
+  pivot_longer(cols = c("Bird","Wheels"),
+               names_to = "Operator",
+               values_to = "pct") %>% 
+  glimpse()
+
 
 # Minimum Deployment #################
 bird_tot =
@@ -161,6 +173,9 @@ operators_tot =
   bird_tot %>% 
   left_join(wheels_tot, by="Date")
 
+# Average daily depl
+mean(operators_tot$Bird, na.rm = TRUE) # 4750
+mean(operators_tot$Wheels, na.rm = TRUE) # 203
 
 # Compare Counts to Karen's work ###########
 compare = 
@@ -177,17 +192,6 @@ compare =
 # our percentages are very close
 
 
-# Join the tables #################
-operators_pct =
-  bird_pct %>% 
-  rename(Bird=pct) %>% 
-  left_join(wheels_pct %>% 
-              rename(Wheels=pct),
-            by="Date") %>% 
-  pivot_longer(cols = c("Bird","Wheels"),
-               names_to = "Operator",
-               values_to = "pct") %>% 
-  glimpse()
   
 
 # Plot %s ##############
@@ -206,13 +210,15 @@ depl_pct =
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   scale_y_continuous("Percent of Vehicles in EFMDDs\n", breaks = pretty_breaks(4),labels = label_number(scale = 100, suffix = "%")) +
   labs(
-    title = str_c("Figure X: Daily Deployment in EFMDDs (January to February 2023)"),
-    subtitle = str_c("Operators deploy less than 20% of their total fleet in EFMDDs."),
-    caption = "Source: Swarm of Scooters API \nNote: API scrape for Wheels began 5 days after starting the scrape for Bird. "
+    title = str_c("Figure 17: Daily Deployment in EFMDDs (January 18 to February 16, 2023)"),
+    subtitle = str_c("Operators deployed less than 20% of their total fleet in EFMDDs."),
+    caption = "Source: APIs of Bird and Wheels."
   ) + 
-  theme_classic()
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic"))
+
       
-# ggsave(plot = depl_pct,filename = file.path(plots_dir,"EFMDD_Depl_API.png"), width = 8,height = 5)
+ggsave(plot = depl_pct,filename = file.path(plots_dir,"EFMDD_Depl_API.png"), width = 8,height = 5)
 
 # Save Tables #############
 # exclude SOZs in count of total since they are double counted
@@ -235,13 +241,13 @@ wheels_sumTot =
     pct = ct/tot_noSOZ,
     row.id = c(1,2,4,3)) %>% 
   arrange(row.id) # 12.4%
-# how to save as excel on different sheets
+
 
 # Notes #############
 # consistently, there are 36 NCs that do not have any Bird vehicles located there
 
 # Export #############
-# save(time_all,bird,wheels, file = file.path(data_files_dir,"API_Exploring_Data.RData"))
+# save(time_all,bird,wheels,operators_pct,operators_tot,file = file.path(data_files_dir,"API_Exploring_Data.RData"))
 
 xl_sheets = list(
   "Bird_DailyCt_NC" = bird,
@@ -253,6 +259,4 @@ xl_sheets = list(
 )
 
 # openxlsx::write.xlsx(xl_sheets, file = file.path(data_files_dir,"API_BirdWheels_Summary.xlsx"))
-
-# scratch #####
 

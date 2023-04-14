@@ -52,12 +52,11 @@ plot_operators =
   xlab("\nNumber of Operators\n") +
   scale_y_continuous("Average Trip Cost\n", labels = label_number(accuracy = .01, prefix = "$")) +
   labs(
-    title = "Figure X: Trip Cost by Number of Operators",
-    subtitle = "Cities include San Francisco, Santa Monica, and Washington, D.C.\n",
+    title = "Figure 24: Trip Cost by Number of Operators",
+    subtitle = "Cities include Austin, Santa Monica, and Portland\n",
     caption = "Source: Scooter prices collected individually from mobile apps.\nTrip information from Global Mobility Dashbard."
   ) +
-  theme(text = element_text(family = "Century Gothic", size = 12)) +
-  theme_bw()
+  theme_bw() 
 
 # add a different color for the LA point
 plot_operators =
@@ -70,10 +69,49 @@ plot_operators =
   geom_label(data = operators %>% 
                filter(city %in% "Los Angeles"),
              aes(label = city),
+             family = "Century Gothic",
              hjust = -.1) +
-  theme(legend.position = "bottom")
+  theme(text = element_text(family = "Century Gothic", size = 12),
+        legend.position = "bottom")
   
 ggsave(plot = plot_operators, filename = file.path(plots_dir,"Operators_TripCost.png"), height = 5, width = 6)
 
 
+# Make graph showing two kinds of elasticity estimates
+# make data
+df_el =
+  data.frame(
+    p_incr = c(0,2,4,6,8,10),
+    high_el = c(0,-6,-12,-18,-24,-30),
+    norm_el = c(0,-2,-4,-6,-8,-10)
+  ) %>% 
+  pivot_longer(cols = c(high_el,norm_el),
+               names_to = "Elasticity",
+               values_to = "d_decr")
+
+# plot
+plot_ElEst =
+  ggplot(data = df_el, aes(x=p_incr, y=d_decr, color=Elasticity)) +
+  geom_line(linewidth=1.5) +
+  geom_ribbon(aes(ymin = d_decr, ymax = max(d_decr), fill = Elasticity),alpha = 0.5, linetype=0) +
+  scale_color_manual(
+    values = c("norm_el"="dodgerblue3","high_el"="tomato2"),
+    breaks = c("norm_el","high_el"),
+    labels = c("Model 1: Normal Elasticity Range",
+               "Model 2: High Elasticity Range")
+  ) +
+  scale_fill_manual(
+    values = c("norm_el"="dodgerblue3","high_el"="tomato2"),
+    guide = "none"
+  ) +
+  scale_x_continuous("\nPrice Increase", labels = label_number(accuracy = 1, suffix = "%")) +
+  scale_y_continuous("Demand Decrease\n", labels = label_number(suffix = "%")) +
+  labs(
+    title = "Figure 22: Scooter Price Elasticity Estimates\n",
+  ) +
+  theme_classic() +
+  theme(text = element_text(family = "Century Gothic")) +
+  guides(color = guide_legend(override.aes = list(fill = NA)))
+
+ggsave(plot = plot_ElEst, filename = file.path(plots_dir,"Elasticity_Ranges.png"), width = 6, height = 4)
 
