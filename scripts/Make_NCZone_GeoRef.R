@@ -134,7 +134,7 @@ nc_georef_noSOZ =
   mutate(
     Geo_Type_wSOZ = 
       ifelse(
-        cert_name %in% c("VENICE NC","DOWNTOWN LOS ANGELES","HOLLYWOOD HILLS WEST NC","HOLLYWOOD UNITED NC","HOLLYWOOD STUDIO DISTRICT","CENTRAL HOLLYWOOD NC"),
+        cert_name %in% c("VENICE NC","DOWNTOWN LOS ANGELES","HOLLYWOOD HILLS WEST NC","HOLLYWOOD UNITED NC","CENTRAL HOLLYWOOD NC"),
         "Special Operations Zone",
         Geo_Type)) %>% 
   glimpse()
@@ -168,3 +168,27 @@ nc_georef_wSOZ <- st_as_sf(nc_georef_wSOZ)
 
 ## Save
 # save(nc_georef_noSOZ,nc_georef_wSOZ,file = file.path(output_path,"NCZone_GeoRef_NoPop.RData"))
+
+
+## Check which NC is part of SOZ ######
+georef = st_as_sf(nc_georef) %>% 
+  st_make_valid()
+
+geoprog = st_make_valid(prog_geos)
+
+
+ggplot(data = georef) +
+  geom_sf() +
+  geom_sf(data = geoprog %>% filter(grepl("Special",Geo_Type)),
+          aes(color=Geo_Type), fill="transparent")
+
+SOZs = st_intersects(geoprog %>% filter(grepl("Special",Geo_Type)),georef)
+
+SOZ_num = SOZs %>% unlist()
+
+ggplot(data = georef[SOZ_num,]) +
+  geom_sf() +
+  geom_sf(data = geoprog %>% filter(grepl("Special",Geo_Type)),
+          aes(color=Geo_Type), fill="transparent") +
+  geom_sf_text(aes(label = str_wrap(cert_name, width = 15)), size = 2)
+# Venice SOZ is completely within Venice NC. Downtown LA SOZ is essentially within Downtown LA NC. Hollywood SOZ is mostly in 3 NCs - "HOLLYWOOD HILLS WEST NC","HOLLYWOOD UNITED NC","CENTRAL HOLLYWOOD NC" - though only a very small portion is in "HOLLYWOOD STUDIO DISTRICT", we excluded it

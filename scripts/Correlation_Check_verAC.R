@@ -127,3 +127,10 @@ cor.test(combined$avg_depl, combined$dest_ct, method = "spearman", alternative =
 cor.test(combined$avg_depl, combined$origin_ct, method = "spearman", alternative = "greater", exact = FALSE)
 cor.test(combined$origin_ct, combined$dest_ct, method = "spearman", alternative = "greater", exact = FALSE)
 
+# All combinations show that the kendall's tau is statistical significance
+cor.test(combined$pen_count, combined$avg_depl, method = "kendall", alternative = "greater", exact = FALSE)
+cor.test(combined$pen_count, combined$dest_ct, method = "kendall", alternative = "greater", exact = FALSE)
+cor.test(combined$pen_count, combined$origin_ct, method = "kendall", alternative = "greater", exact = FALSE)
+cor.test(combined$avg_depl, combined$dest_ct, method = "kendall", alternative = "greater", exact = FALSE)
+cor.test(combined$avg_depl, combined$origin_ct, method = "kendall", alternative = "greater", exact = FALSE)
+cor.test(combined$origin_ct, combined$dest_ct, method = "kendall", alternative = "greater", exact = FALSE)
