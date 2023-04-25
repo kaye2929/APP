@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' width='529.00pt' height='534.00pt' viewBox='0 0 529.00 534.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw1MjkuMDB8MC4wMHw1MzQuMDA='>
+    <rect x='0.00' y='0.00' width='529.00' height='534.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw1MjkuMDB8MC4wMHw1MzQuMDA=)'>
+<rect x='0.00' y='0.00' width='529.00' height='534.00' style='stroke-width: 1.07; fill: #FFFFFF;' />
+</g>
+<defs>
+  <clipPath id='cpMzMuMDl8NTIzLjUyfDIzLjE4fDQ4OC44OQ=='>
+    <rect x='33.09' y='23.18' width='490.43' height='465.71' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMzMuMDl8NTIzLjUyfDIzLjE4fDQ4OC44OQ==)'>
+<rect x='33.09' y='23.18' width='490.43' height='465.71' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<polyline points='33.09,385.03 523.52,385.03 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='33.09,219.65 523.52,219.65 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='33.09,54.27 523.52,54.27 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='33.09,467.72 523.52,467.72 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='33.09,302.34 523.52,302.34 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='33.09,136.96 523.52,136.96 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='125.05,488.89 125.05,23.18 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='278.31,488.89 278.31,23.18 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='431.57,488.89 431.57,23.18 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<rect x='239.99' y='173.34' width='76.63' height='294.38' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1874CD;' />
+<rect x='86.74' y='84.04' width='76.63' height='383.68' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1874CD;' />
+<rect x='393.25' y='44.35' width='76.63' height='423.37' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #1874CD;' />
+<rect x='33.09' y='23.18' width='490.43' height='465.71' style='stroke-width: 1.07; stroke: #333333;' />
+</g>
+<g clip-path='url(#cpMC4wMHw1MjkuMDB8MC4wMHw1MzQuMDA=)'>
+<text x='28.16' y='470.88' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='4.87px' lengthAdjust='spacingAndGlyphs'>0</text>
+<text x='28.16' y='305.50' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='4.87px' lengthAdjust='spacingAndGlyphs'>5</text>
+<text x='28.16' y='140.12' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='9.75px' lengthAdjust='spacingAndGlyphs'>10</text>
+<polyline points='30.35,467.72 33.09,467.72 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<polyline points='30.35,302.34 33.09,302.34 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<polyline points='30.35,136.96 33.09,136.96 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<polyline points='125.05,491.63 125.05,488.89 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<polyline points='278.31,491.63 278.31,488.89 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<polyline points='431.57,491.63 431.57,488.89 ' style='stroke-width: 1.07; stroke: #333333; stroke-linecap: butt;' />
+<text x='125.05' y='500.14' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='43.03px' lengthAdjust='spacingAndGlyphs'>non-DACs</text>
+<text x='278.31' y='500.14' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='60.29px' lengthAdjust='spacingAndGlyphs'>non-SFV DACs</text>
+<text x='431.57' y='500.14' text-anchor='middle' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Century Gothic";' textLength='40.88px' lengthAdjust='spacingAndGlyphs'>SFV DACs</text>
+<text x='278.31' y='512.61' text-anchor='middle' style='font-size: 11.00px; font-family: "Century Gothic";' textLength='26.07px' lengthAdjust='spacingAndGlyphs'>Area</text>
+<text transform='translate(13.39,256.03) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: "Century Gothic";' textLength='148.87px' lengthAdjust='spacingAndGlyphs'>Average Response Time (hr)</text>
+<text x='33.09' y='14.95' style='font-size: 13.20px; font-family: "Century Gothic";' textLength='217.08px' lengthAdjust='spacingAndGlyphs'>Figure 18: Average Response Time</text>
+<text x='523.52' y='526.70' text-anchor='end' style='font-size: 8.80px; font-family: "Century Gothic";' textLength='146.98px' lengthAdjust='spacingAndGlyphs'>Source: LADOT Year One Snapshot</text>
+</g>
+</svg>
