@@ -4,11 +4,12 @@
 
 # Set Up ####
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont", install = F, update = F)
 
 # directories
 data_files_dir <- file.path('.','output','files')
 plots_dir <- file.path(".","output","plots")
+plots_svg_dir <- file.path(".","output","plots_svg")
 
 # load trip data
 trip_df <- read.csv(file.path(data_files_dir,"Trip_OD_by_NC.csv"))
@@ -69,6 +70,7 @@ depl_all_plot =
 
 ggsave(plot = depl_all_plot,filename = file.path(plots_dir,"Deployment_AllYrs.png"), width = 10,height = 6)
 
+ggsave(plot = depl_all_plot,filename = file.path(plots_svg_dir,"Appendix4_Depl_AllMth.svg"), width = 10,height = 6)
 
 # P2: All Mo. by SFV ###########
 # for appendix, no filtering, by SFV or non SFV, for all months
@@ -94,6 +96,8 @@ depl_allSFV_plot =
 
 ggsave(plot = depl_allSFV_plot,filename = file.path(plots_dir,"Deployment_AllYrs_SFV.png"), width = 10,height = 6)
 
+ggsave(plot = depl_allSFV_plot,filename = file.path(plots_svg_dir,"Appendix3_Depl_AllMth_SFV.svg"), width = 10,height = 6)
+
 # P3: PP Avg by SFV ####
 # plot deployment during Pilot Program (Apr 2019-Mar2020), group by SFV or not
 # Figure 2
@@ -114,6 +118,7 @@ depl_ppSFV_plot =
 # 3. save plot
 ggsave(plot = depl_ppSFV_plot,filename = file.path(plots_dir,"Deployment_Pilot_SFV.png"), width = 6,height = 5)
 
+ggsave(plot = depl_ppSFV_plot,filename = file.path(plots_svg_dir,"Figure2_Depl_Pilot_SFV.svg"), width = 6,height = 5)
 
 # P4: Curr Avg Depl by Program Geos ####
 # 1. only keep deployment for the months in the specific years of the "current" program (Apr 2020 to Sept 2022)
@@ -135,6 +140,7 @@ depl_curr_plot =
 # 3. save plot
 ggsave(plot = depl_curr_plot,filename = file.path(plots_dir,"Deployment_Current.png"), width = 8,height = 5)
 
+ggsave(plot = depl_curr_plot,filename = file.path(plots_svg_dir,"Figure9_Depl_Curr.svg"), width = 8,height = 5)
 
 # SUMMARY STATS #############
 # SS1: PP Depl ###############
@@ -193,6 +199,7 @@ depl_ppTop3_plot =
 
 ggsave(plot = depl_ppTop3_plot, filename = file.path(plots_dir,"Deployment_Pilot_Top3.png"),width = 10,height = 7)
 
+ggsave(plot = depl_ppTop3_plot, filename = file.path(plots_svg_dir,"Figure3_Depl_Pilot_Top3.svg"),width = 10,height = 7)
 
 # SS2: Curr Depl ##############
 depl_curr = 
@@ -253,6 +260,7 @@ depl_currTop3_plot =
 
 ggsave(plot = depl_currTop3_plot, filename = file.path(plots_dir,"Deployment_Current_Top3.png"),width = 10.5,height = 7)
 
+ggsave(plot = depl_currTop3_plot, filename = file.path(plots_svg_dir,"Figure10_Depl_Curr_Top3.svg"),width = 10.5,height = 7)
 
 # Export to Excel ##########
 xl_sheets =
@@ -285,6 +293,8 @@ depl_apr21_plot =
 
 # 3. save plot
 ggsave(plot = depl_apr21_plot,filename = file.path(plots_dir,"Deployment_Apr21.png"), width = 6,height = 7)
+
+ggsave(plot = depl_apr21_plot,filename = file.path(plots_svg_dir,"Figure20_Depl_Apr21.svg"), width = 6,height = 7)
 
 # Normality check for: ######
 # sq mi2, per capita, and per capita >18

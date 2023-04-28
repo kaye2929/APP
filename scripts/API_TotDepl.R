@@ -1,14 +1,16 @@
 ############## Count Total Vehicles Deployed from API Data #############
+# Author: Abraham Cheung
 # Purpose: recount the number of vehicles in each NC and SOZ. Numbers used to generate summary statistics to see if operators met the 20% distribution threshold.
 
 # Set Up ##############
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx", install = FALSE, update = FALSE)
 
 # directories
 data_files_dir <- file.path('.','output','files')
 plots_dir <- file.path(".","output","plots")
 data_api_dir <- file.path('.','data','API - Swarm of Scooters')
+plots_svg_dir <- file.path(".","output","plots_svg")
 
 
 # Load Data ##############
@@ -17,11 +19,6 @@ data_api_dir <- file.path('.','data','API - Swarm of Scooters')
 # deploy_df <- read_csv(file.path(data_files_dir,"veh_depl_long.csv"))
 
 # load georeference files
-# nc_georef_noSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_noSOZ.geojson")) %>% 
-#   st_make_valid() %>% 
-#   st_transform(4326) %>% 
-#   mutate(OBJ_ID = 1:nrow(.))
-
 nc_georef_wSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_wSOZ.geojson")) %>% 
   st_make_valid() %>% 
   st_transform(4326) %>% # set CRS to WGS 84
@@ -30,7 +27,8 @@ nc_georef_wSOZ <- sf::st_read(file.path(data_files_dir,"NCZone_GeoRef_wSOZ.geojs
 # load other files
 api_df = st_read(file.path(data_files_dir,"api_avg_deployment.geojson")) # Karen's work. Load to check info
 
-load(file = file.path(data_files_dir,"API_Exploring_Data.RData")) # my saved work. Load so that you don't need to renegerate anything
+# load saved RData
+load(file = file.path(data_files_dir,"API_Exploring_Data.RData")) # AC saved work. Load so that you don't need to renegerate anything
 
 
 # Function for Counting Vehicles in NC #################
@@ -217,8 +215,10 @@ depl_pct =
   theme_classic() +
   theme(text = element_text(family = "Century Gothic"))
 
-      
+# save   
 ggsave(plot = depl_pct,filename = file.path(plots_dir,"EFMDD_Depl_API.png"), width = 8,height = 5)
+
+ggsave(plot = depl_pct,filename = file.path(plots_svg_dir,"Figure17_EFMDD_Depl_API.svg"), width = 8,height = 5)
 
 # Save Tables #############
 # exclude SOZs in count of total since they are double counted

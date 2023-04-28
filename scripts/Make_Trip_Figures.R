@@ -4,11 +4,12 @@
 
 # Set Up ####
 # libraries
-pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont")
+pacman::p_load("tidyverse","sf","scales","lubridate","openxlsx","extrafont", install = F, update = F)
 
 # directories
 data_files_dir <- file.path('.','output','files')
 plots_dir <- file.path(".","output","plots")
+plots_svg_dir <- file.path(".","output","plots_svg")
 
 # load trip data
 trip_df <- read.csv(file.path(data_files_dir,"Trip_OD_by_NC.csv"))
@@ -93,6 +94,7 @@ tr_all_tot =
 
 ggsave(plot = tr_all_tot,filename = file.path(plots_dir,"Trips_AllYrs_Tot.png"), width = 10,height = 6)
 
+ggsave(plot = tr_all_tot,filename = file.path(plots_svg_dir,"Appendix6_Trips_AllYrs_Tot.svg"), width = 10,height = 6)
 
 # Plot 2: All Avg Program Geos Trips ###########
 tr_all_avg =
@@ -123,6 +125,7 @@ tr_all_avg =
 
 ggsave(plot = tr_all_avg,filename = file.path(plots_dir,"Trips_AllYrs_Avg.png"), width = 10,height = 6)
 
+ggsave(plot = tr_all_avg,filename = file.path(plots_svg_dir,"Appendix8_Trips_AllYrs_Avg.svg"), width = 10,height = 6)
 
 # Plot 3: All Total SFV Trips ###########
 # for appendix, no filtering by Program or years
@@ -147,6 +150,8 @@ tr_allSFV_tot =
 
 ggsave(plot = tr_allSFV_tot,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Tot.png"), width = 10,height = 6)
 
+ggsave(plot = tr_allSFV_tot,filename = file.path(plots_svg_dir,"Appendix5_Trips_AllYrs_SFV_Tot.svg"), width = 10,height = 6)
+
 # Plot 4: All Avg SFV Trips ###########
 tr_allSFV_avg =
   tr_org %>% 
@@ -169,6 +174,7 @@ tr_allSFV_avg =
 
 ggsave(plot = tr_allSFV_avg,filename = file.path(plots_dir,"Trips_AllYrs_SFV_Avg.png"), width = 10,height = 6)
 
+ggsave(plot = tr_allSFV_avg,filename = file.path(plots_svg_dir,"Appendix7_Trips_AllYrs_SFV_Avg.svg"), width = 10,height = 6)
 
 # Plot 5: PP Total Trips  ##############
 # 1. only keep trip counts for the months in the specific years (Pilot Program)
@@ -188,6 +194,7 @@ tr_org_ppyr_plot =
 # 3. save plot
 ggsave(plot = tr_org_ppyr_plot,filename = file.path(plots_dir,"Trips_Pilot_Tot.png"), width = 6,height = 5)
 
+ggsave(plot = tr_org_ppyr_plot,filename = file.path(plots_svg_dir,"Figure5_Trips_Pilot_Tot.svg"), width = 6,height = 5)
 
 # Plot 6: PP Avg Trips ##############
 # 1. reuse this plot and list of months. 
@@ -206,6 +213,7 @@ tr_org_ppyr_avg_plot =
 # 3. save plot
 ggsave(plot = tr_org_ppyr_avg_plot,filename = file.path(plots_dir,"Trips_Pilot_Avg.png"), width = 6,height = 5)
 
+ggsave(plot = tr_org_ppyr_avg_plot,filename = file.path(plots_svg_dir,"Figure6_Trips_Pilot_Avg.svg"), width = 6,height = 5)
 
 # Plot 7: Current Total Trips ############
 # 1. make list of months for the current program
@@ -226,6 +234,7 @@ tr_curr_tot =
 # 3. save plot
 ggsave(plot = tr_curr_tot,filename = file.path(plots_dir,"Trips_Current_Total.png"), width = 8,height = 5)
 
+ggsave(plot = tr_curr_tot,filename = file.path(plots_svg_dir,"Figure11_Trips_Current_Total.svg"), width = 8,height = 5)
 
 # Plot 8: Current Avg Trips ############
 # 1. reuse previous plot and list of months
@@ -245,6 +254,7 @@ tr_curr_avg =
 # 3. save plot
 ggsave(plot = tr_curr_avg,filename = file.path(plots_dir,"Trips_Current_Avg.png"), width = 8,height = 5)
 
+ggsave(plot = tr_curr_avg,filename = file.path(plots_svg_dir,"Figure12_Trips_Current_Avg.svg"), width = 8,height = 5)
 
 # Summary Stats ##############
 # SS 1: PP SFV ############
@@ -299,9 +309,10 @@ tr_ppTop3_plot =
   theme_bw() +
   theme(text = element_text(family = "Century Gothic"))
 
-
+# save
 ggsave(plot = tr_ppTop3_plot, filename = file.path(plots_dir,"Trips_Pilot_Top3.png"),width = 10,height = 7)
 
+ggsave(plot = tr_ppTop3_plot, filename = file.path(plots_svg_dir,"Figure4_Trips_Pilot_Top3.svg"),width = 10,height = 7)
 
 
 # SS 2: Current Prog Geos ###############
@@ -363,22 +374,10 @@ tr_currTop3_plot =
   theme_bw() +
   theme(text = element_text(family = "Century Gothic"))
 
-
+# save
 ggsave(plot = tr_currTop3_plot, filename = file.path(plots_dir,"Trips_Current_Top3.png"),width = 10,height = 7)
 
-# SS 3: All Mo. by SFV ###############
-tr_org
-
-
-
-
-
-
-
-
-# SS 4: All Mo. by Prog Geos #############
-tr_org
-
+ggsave(plot = tr_currTop3_plot, filename = file.path(plots_svg_dir,"Figure13_Trips_Current_Top3.svg"),width = 10,height = 7)
 
 
 # Export DFs as excel sheets ##############
@@ -412,6 +411,7 @@ tr_apr21_plot =
 # 3. save plot
 ggsave(plot = tr_apr21_plot,filename = file.path(plots_dir,"Trips_Apr21_Tot.png"), width = 6,height = 7)
 
+ggsave(plot = tr_apr21_plot,filename = file.path(plots_svg_dir,"Figure21_Trips_Apr21_Tot.svg"), width = 6,height = 7)
 
 # Storage #############
 # # 4. plot log transformed y-axis
