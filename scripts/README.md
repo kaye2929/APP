@@ -24,6 +24,20 @@ We obtained ACS data via the Census Bureau API for the following demographics:
 - Total Population (B02001)
 - Population by Race (B02001)
 - Poverty Levels (S1701)
-- 
 
 The resulting .geojson file contains census tract level data for all the tables above for the County of Los Angeles. The mapping projects files aggregating the tract level data to neighborhood council level demographics.
+
+## About penalty_data_cleaning.R
+This script is used to reorganize the LA311 requests received from LADOT. The data can be found at the following link:
+https://github.com/kaye2929/APP/blob/main/data/UCLA%20Data%20Request%20Dockless%20Violations%20MyLA311.xlsx
+The script completes the following items:
+- Matched the name of each Neighborhood Councils with the NC name in output/files/NCZone_GeoRef_noSOZ.geojson 
+- Append the 4 workbooks and every sheet inside 
+- Plotted the figures for the APP report
+
+## About api_cleaning.ipynb
+We developed this script to examine the pattern of scooter deployment over the API collection period. We analyzed the deployment trends of two operators, namely Bird and Wheels. The data for these two operators can be found at the following link:
+https://github.com/kaye2929/APP/tree/main/data/API_scooter_locations
+
+## About vehicle_deployment_cleaning.R
+We created this script for combining [Vehicle Deployment Neighborhood Council Districts Data](https://github.com/kaye2929/APP/blob/main/data/CPRA%20%2322-10589%20Data/Vehicle%20Deployment.%20Neighborhood%20Council%20Districts.xlsx) to one sheet (both long and wide formats)
