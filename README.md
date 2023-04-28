@@ -1,4 +1,4 @@
-# Applied Policy Project: Micromobility Deployment in the San Fernando Valley in the City of Los Angeles
+# Applied Policy Project: Micromobility Equity in the City of Los Angeles
 ## Group Members: 
 - Abraham Cheung
 - Alberto Murrilo
@@ -18,4 +18,4 @@ For-Hire Policy and Enforcement Division
 Professor Joshua Schank
 
 ## Policy Question
-What are the policy options that LADOT can pursue within the current LADOT micromobility program and in future micromobility policies to improve access to dockless vehicles in the San Fernando Valley?
+What actions can LADOT take within its micromobility program to improve the equitable deployment of scooters?
