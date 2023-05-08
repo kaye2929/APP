@@ -449,8 +449,8 @@ ggplot(pa1, aes(x = Month, y = log(ppt_ori), color = Geo_Type_wSOZ)) +
   theme_bw() + 
   theme(plot.background = element_rect(colour = "black"), text = element_text(family = "Century Gothic"))
 
-ggsave("output/plots/penalties_per_trip_geo.png")
-ggsave("output/plots_svg/Appendix1_penalties_per_trip_geo.svg")
+ggsave("output/plots/penalties_per_trip_geo.png", width = 10,height = 6)
+ggsave("output/plots_svg/Appendix1_penalties_per_trip_geo.svg", width = 10,height = 6)
 
 ## Plot 4 (Figure 25) #####################################
 # Penalties per square mile by month (sum of all SFV ncs and sum of all non-SFV ncs)
@@ -482,8 +482,8 @@ ggplot(pp, aes(x = Month, y = ppmpnc, color = SFV)) +
   theme_bw() +
   theme(plot.background = element_rect(colour = "black"), text = element_text(family = "Century Gothic")) 
 
-ggsave("output/plots/penalties_per_mi_sfv.png")
-ggsave("output/plots_svg/Figure25_penalties_per_mi.svg")
+ggsave("output/plots/penalties_per_mi_sfv.png",  width = 10,height = 6)
+ggsave("output/plots_svg/Figure25_penalties_per_mi.svg", width = 10,height = 6)
 
 ## Plot 5 (Appendix Figure 2) #####################################
 # Penalties per square mile by month (group by geo_type) (Appendix Figure 2)
@@ -509,8 +509,8 @@ ggplot(pa2, aes(x = Month, y = log(ppmpnc), color = Geo_Type_wSOZ)) +
   theme_bw() +
   theme(plot.background = element_rect(colour = "black"), text = element_text(family = "Century Gothic"))
 
-ggsave("output/plots/penalties_per_mi_geo.png")
-ggsave("output/plots_svg/Appendix2_penalties_per_mi_geo.svg")
+ggsave("output/plots/penalties_per_mi_geo.png", width = 10,height = 6)
+ggsave("output/plots_svg/Appendix2_penalties_per_mi_geo.svg", width = 10,height = 6)
 
 ## Plot 6 (Figure 7) #####################################
 # Pilot year penalties summary graph 
