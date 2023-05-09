@@ -409,9 +409,9 @@ tr_apr21_plot =
     caption = "Source: LADOT CPRA Data")
 
 # 3. save plot
-ggsave(plot = tr_apr21_plot,filename = file.path(plots_dir,"Trips_Apr21_Tot.png"), width = 6,height = 7)
+ggsave(plot = tr_apr21_plot,filename = file.path(plots_dir,"Trips_Apr21_Tot.png"), width = 7,height = 7)
 
-ggsave(plot = tr_apr21_plot,filename = file.path(plots_svg_dir,"Figure21_Trips_Apr21_Tot.svg"), width = 6,height = 7)
+ggsave(plot = tr_apr21_plot,filename = file.path(plots_svg_dir,"Figure21_Trips_Apr21_Tot.svg"), width = 7,height = 7)
 
 # Storage #############
 # # 4. plot log transformed y-axis

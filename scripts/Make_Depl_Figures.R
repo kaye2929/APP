@@ -292,9 +292,9 @@ depl_apr21_plot =
     caption = "Source: LADOT CPRA Data")
 
 # 3. save plot
-ggsave(plot = depl_apr21_plot,filename = file.path(plots_dir,"Deployment_Apr21.png"), width = 6,height = 7)
+ggsave(plot = depl_apr21_plot,filename = file.path(plots_dir,"Deployment_Apr21.png"), width = 7,height = 7)
 
-ggsave(plot = depl_apr21_plot,filename = file.path(plots_svg_dir,"Figure20_Depl_Apr21.svg"), width = 6,height = 7)
+ggsave(plot = depl_apr21_plot,filename = file.path(plots_svg_dir,"Figure20_Depl_Apr21.svg"), width = 7,height = 7)
 
 # Normality check for: ######
 # sq mi2, per capita, and per capita >18
