@@ -1,6 +1,6 @@
 # Set up #################################
 # load packages
-pacman::p_load(tidyverse, readxl, lubridate, sf, extrafont, svglite)
+pacman::p_load(tidyverse, readxl, lubridate, sf, extrafont, svglite,scales)
 
 # directory paths
 data_files_dir <- file.path('.', 'output/files')
@@ -396,7 +396,7 @@ penalty_sfv %>%
   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
   labs(x = "Month", 
        y = "311 Requests per Trip (log)",
-       title = str_c("Figure 8: ","311 Requests per trip by SFV (Pilot Program)"),
+       title = str_c("Figure 8: ","311 Requests per trip (Pilot Program)"),
        caption = "Source: LADOT CPRA Micromobility MyLA311 Requests") +
   scale_x_discrete("Month", guide = guide_axis(angle = 45)) + 
   theme_bw() +
@@ -414,7 +414,7 @@ penalty_sfv %>%
   scale_color_manual(values = c("dodgerblue3", "tomato2"), labels = c("Non-SFV", "SFV")) +
   labs(x = "Month", 
        y = "311 Requests per Trip (log)",
-       title = str_c("Figure 16: ","311 Requests per trip by SFV (Current Program)"),
+       title = str_c("Figure 16: ","311 Requests per trip (Current Program)"),
        caption = "Source: LADOT CPRA Micromobility MyLA311 Requests") +
   scale_x_discrete("Month", guide = guide_axis(angle = 45)) + 
   theme_bw() +
@@ -531,7 +531,7 @@ summary %>%
                      guide = guide_axis(angle = 45)) +
   labs(x = "Month", 
        y = "Number of 311 Requests",
-       title = str_c("Figure 7: ","Number of 311 Requests during by SFV (Pilot Program)"),
+       title = str_c("Figure 7: ","Number of 311 Requests during (Pilot Program)"),
        caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
   ) + 
   theme_bw() +
@@ -553,11 +553,12 @@ ggplot(post_pilot, aes(x = as.numeric(Month), y = penalty_n, color = SFV)) +
                      guide = guide_axis(angle = 45)) +
   labs(x = "Month", 
        y = "Number of 311 Requests",
-       title = str_c("Figure 14: ","Number of 311 Requests by SFV (Current Program)"),
+       title = str_c("Figure 14: ","Number of 311 Requests (Current Program)"),
        caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
   ) + 
   theme_bw() +
   theme(plot.background = element_rect(colour = "black"), text = element_text(family = "Century Gothic")) 
+
 
 ggsave("output/plots/post_pilot_year_penalities.png")
 ggsave("output/plots_svg/Figure14_post_pilot_year_penalities.svg")
@@ -579,11 +580,12 @@ ggplot(violation_freq, aes(x = n, y = violation_type)) +
   geom_bar(stat = "identity", position = "dodge", fill = "dodgerblue3") + 
   scale_y_discrete("Service Request Type", labels = function(x) str_wrap(x, width = 10)) +
   scale_x_continuous(limits = c(0, 40000)) + 
-  geom_label(aes(label = n), 
-             size = 2.5, 
-             fill = "grey90", 
+  geom_label(aes(label = comma(n)), 
+             size = 3, 
+             fill = grey(0.95), 
              label.size = 0, 
-             hjust=-.5, 
+             hjust= -.1, 
+             vjust= .5,
              family = "Century Gothic") +
   labs(x = "Number of 311 Requests",
        y = "Service Request Type", 
