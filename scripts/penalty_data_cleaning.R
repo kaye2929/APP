@@ -531,7 +531,7 @@ summary %>%
                      guide = guide_axis(angle = 45)) +
   labs(x = "Month", 
        y = "Number of 311 Requests",
-       title = str_c("Figure 7: ","Number of 311 Requests during (Pilot Program)"),
+       title = str_c("Figure 7: ","Number of 311 Requests (Pilot Program)"),
        caption = "Source: LADOT CPRA Micromobility MyLA311 Requests"
   ) + 
   theme_bw() +
