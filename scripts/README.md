@@ -1,28 +1,71 @@
-# About APP/scripts Folder
-This folder contains scripts that we used to clean and analyze all our data. Outputs are stored in APP/cleaned.
+# About this Folder
+This folder contains scripts that we used to clean and analyze all our data. Outputs are stored in [APP/output/files](../output/files).
+
+## About API_TotDepl.R
+This script aggregates and summarizes the point-level [Bird and Wheels data](../data/API_scooter_locations).
+The script completes these items:
+- Count the number of vehicles (points) in each Neighborhood Council (polygon).
+- Summarize daily total deployment
+- Calculate the daily percent of the total fleet in EFMDDs
+- Plot data
+
+## About Corr_Check_res.Rmd
+This script calculates the Spearman's Rho and Kendall's Tau to evaluate the correlation between deployment, trips, and penalties.
+
+
+## About Get_ACS2021_Demos.R
+This script calls the ACS 2021 5-Year Estimates (2017-2021) for the County of Los Angeles. We obtained total population and total population over 18 years old from table B01001. 
+The script completes the following items:
+- Call Table B01001 at the census block group level for LA County
+- Interpolate the population into the 99 NCs and the 3 SOZs.
+
+
+## About Make_Depl_Figures.R
+This scripts makes the charts and plots for deployment data. PNG outputs are located [here](../output/plots). SVG outputs are located [here](../output/plots_svg).
+Example plots include:
+- Average Deployment by SFV vs non-SFV NCs
+- Average Deployment by the 4 Program Geos (SOZ, EFMDD, MDD, SPD)
+- Subset the plot for a specific time period: Pilot Program, Current Program, around April 2021.
+- Top 3 NCs with highest deployment by SFV/non-SFV and 4 Program Geos
+
+
+## About Make_Mapping_Data.R
+This script summarizes deployment during the Pilot and Current Program. The output was used to make deployment and trip maps. Joined the NC geometries for mapping.
+
+
+## About Make_NCZone_GeoRef.R
+This script creates the cross reference file between NCs and the 4 program geographies. We download [the Neighborhood Council shapefiles from LA GeoHub](https://geohub.lacity.org/datasets/lahub::neighborhood-councils-certified/about). 
+This script completes the following items:
+- Match the NC names between the GeoHub and CPRA data
+- Append three observations for the 3 SOZs
+
+
+## About Make_Trip_Figures.R
+This scripts makes the charts and plots for trip data. PNG outputs are located [here](../output/plots). SVG outputs are located [here](../output/plots_svg).
+Example plots include:
+- Average Trips by SFV vs non-SFV NCs
+- Average Trips by the 4 Program Geos (SOZ, EFMDD, MDD, SPD)
+- Total Trips by SFV vs non-SFV NCs
+- Total Trips by the 4 Program Geos (SOZ, EFMDD, MDD, SPD)
+- Subset the plot for a specific time period: Pilot Program, Current Program, around April 2021.
+- Top 3 NCs with highest trips by SFV/non-SFV and 4 Program Geos
+
 
 ## About OD_by_NCs_script.R
-This script cleans the LADOT Data in https://github.com/kaye2929/APP/tree/main/data/LADOT/CPRA%20%2322-10589%20Data.
+This script cleans [the LADOT CPRA Data](../data/CPRA #22-10589 Data).
 The script completes the following items:
 - Pivoted the data from wide to long form
-- Append the 4 workbooks and every sheet inside 
+- Append the 4 workbooks (2019, 2020, 2021, 2022 Neighborhood Council Trip Matrix) and every sheet inside 
 - Added `month` column to indicate specific month-year
 - Added geometries for each possible origin-destination pairing of Neighborhood Councils 
 
-Output is located APP/output/files.
 
-## About Create_NCgeo_Reference.R
-There are two Neighborhood Council shapefiles. Both of them contain 99 observations, which is the number of NCs currently in LA. The old files were downloaded from LA GeoHub on November 7, 2022 from https://geohub.lacity.org/datasets/lahub::neighborhood-councils-certified/about. However, some of the NC names were updated since then, so we downloaded the .shp files again on 1/4/2023. 
-We created a reference file (.shp and .csv) to connect the NC names from both .shp files and the names given in the data provided from LADOT. `nc_id` is the primary key between the different names. The script `Create_NCgeo_Reference.R` includes the code and documentation for creating the reference file.
+## About Plot_Operator_TripCosts.R
+This scripts makes two charts for two datasets. PNG outputs are located [here](../output/plots). SVG outputs are located [here](../output/plots_svg).
+The plots include:
+- Trip Cost by Number of Operators
+- Scooter Price Elasticity Estimates
 
-## About Get_ACS2021_Demos.R
-Get_ACS2021_Demos.R is a script that pulls Census Bureau's American Community Survey data for the 2021 5-Year Estimates. 
-We obtained ACS data via the Census Bureau API for the following demographics:
-- Total Population (B02001)
-- Population by Race (B02001)
-- Poverty Levels (S1701)
-
-The resulting .geojson file contains census tract level data for all the tables above for the County of Los Angeles. The mapping projects files aggregating the tract level data to neighborhood council level demographics.
 
 ## About penalty_data_cleaning.R
 This script is used to reorganize the LA311 requests received from LADOT. The data can be found at the following link:
@@ -32,9 +75,10 @@ The script completes the following items:
 - Append the 4 workbooks and every sheet inside 
 - Plotted the figures for the APP report
 
+
 ## About api_cleaning.ipynb
-We developed this script to examine the pattern of scooter deployment over the API collection period. We analyzed the deployment trends of two operators, namely Bird and Wheels. The data for these two operators can be found at the following link:
-https://github.com/kaye2929/APP/tree/main/data/API_scooter_locations
+We developed this script to examine the pattern of scooter deployment over the API collection period. We analyzed the deployment trends of two operators, namely Bird and Wheels. The data is located [here](../data/API_scooter_locations)
+
 
 ## About vehicle_deployment_cleaning.R
 We created this script for combining [Vehicle Deployment Neighborhood Council Districts Data](https://github.com/kaye2929/APP/blob/main/data/CPRA%20%2322-10589%20Data/Vehicle%20Deployment.%20Neighborhood%20Council%20Districts.xlsx) to one sheet (both long and wide formats)
