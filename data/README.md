@@ -29,3 +29,7 @@ These shapefiles were downloaded on 01/04/2023 from LA GeoHub at [this link](htt
 
 ## About Operator Size, Trip, and Price
 This Excel sheet contains trip price, average trip speed, and number of operators for a group of cities in the US. We collected the trip prices by viewing the per minute fee on each micromobility operator's app. We collected the average trip speed from the [Global Micromobility Dashboard](https://public.ridereport.com/). We collected the number of operators by searching on city's websites and public documents.
+
+
+## About UCLA Data Request Dockless Violations MyLA311
+This Excel sheet contains MyLA311 dockless vehicle requests and violations. This data was obtained via CPRA from LADOT, which they shared to us on 03/07/2023. Each observation is a violation in a Neighborhood Council with the violation type.
